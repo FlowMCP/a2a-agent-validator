@@ -1,0 +1,23 @@
+{
+    "name": "a2a-agent-validator",
+    "version": "0.1.0",
+    "description": "Validates A2A Protocol Agent Cards: fetches well-known endpoint, validates card structure, classifies capabilities, and builds structured snapshots with comprehensive error reporting.",
+    "main": "./src/index.mjs",
+    "type": "module",
+    "scripts": {
+        "test": "NODE_OPTIONS='--experimental-vm-modules' npx jest --detectOpenHandles",
+        "test:coverage:src": "NODE_OPTIONS='--experimental-vm-modules' npx jest --detectOpenHandles --coverage --collectCoverageFrom='src/**/*.mjs'",
+        "test:file": "NODE_OPTIONS='--experimental-vm-modules' npx jest --detectOpenHandles"
+    },
+    "keywords": [
+        "a2a",
+        "agent",
+        "validator",
+        "agent-card",
+        "protocol"
+    ],
+    "license": "MIT",
+    "devDependencies": {
+        "jest": "^30.0.5"
+    }
+}
