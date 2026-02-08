@@ -167,6 +167,64 @@ Compares two snapshots and returns a structured diff.
 | `defaultOutputModes` | array | Default output modes |
 | `timestamp` | string | ISO 8601 timestamp |
 
+## Validation Codes
+
+### VAL — Input Validation
+
+| Code | Severity | Description |
+|------|----------|-------------|
+| VAL-001 | WARNING | endpoint: Missing value |
+| VAL-002 | WARNING | endpoint: Must be a string |
+| VAL-003 | WARNING | endpoint: Must not be empty |
+| VAL-004 | WARNING | endpoint: Must be a valid URL |
+| VAL-005 | WARNING | timeout: Must be a number |
+| VAL-006 | WARNING | timeout: Must be greater than 0 |
+| VAL-007 | WARNING | before/after: Missing value, must be an object, or missing categories/entries |
+| VAL-008 | WARNING | before/after: Missing value, must be an object, or missing categories/entries |
+
+### CON — A2A Connection
+
+| Code | Severity | Description |
+|------|----------|-------------|
+| CON-010 | INFO | Server not reachable |
+| CON-011 | INFO | Agent Card not found (HTTP 404) |
+| CON-012 | INFO | HTTP error |
+| CON-013 | INFO | Response is not valid JSON |
+| CON-014 | INFO | Request timeout exceeded |
+
+### CSV — Card Structure Validation
+
+| Code | Severity | Description |
+|------|----------|-------------|
+| CSV-020 | WARNING | Missing required field "name" |
+| CSV-021 | WARNING | Missing required field "description" |
+| CSV-022 | WARNING | Missing required field "version" |
+| CSV-023 | WARNING | Missing required field "supported_interfaces" |
+| CSV-024 | WARNING | supported_interfaces must not be empty |
+| CSV-025 | WARNING | Missing required field "capabilities" |
+| CSV-026 | WARNING | Missing required field "default_input_modes" |
+| CSV-027 | WARNING | Missing required field "default_output_modes" |
+| CSV-028 | WARNING | Missing required field "skills" |
+| CSV-030 | WARNING | supported_interfaces: url missing value |
+| CSV-031 | WARNING | supported_interfaces: url must be a valid HTTPS URL |
+| CSV-032 | WARNING | supported_interfaces: protocol_binding missing |
+| CSV-033 | WARNING | supported_interfaces: protocol_version missing |
+| CSV-034 | WARNING | skills: id missing value |
+| CSV-035 | WARNING | skills: name missing value |
+| CSV-036 | WARNING | skills: description missing value |
+| CSV-037 | WARNING | skills: tags missing value |
+| CSV-038 | WARNING | skills: tags must be a non-empty array |
+| CSV-040 | WARNING | provider.url: Missing value |
+| CSV-041 | WARNING | provider.organization: Missing value |
+
+### CMP — Comparison
+
+| Code | Severity | Description |
+|------|----------|-------------|
+| CMP-001 | WARNING | Snapshots are from different agents |
+| CMP-002 | WARNING | Before snapshot has no timestamp |
+| CMP-003 | WARNING | After snapshot is older than before |
+
 ## License
 
 MIT
