@@ -4,18 +4,22 @@ class SnapshotBuilder {
     static build( { endpoint, agentCard, categories } ) {
         const { name, description, version, provider, supported_interfaces: supportedInterfaces, default_input_modes: defaultInputModes, default_output_modes: defaultOutputModes, skills } = agentCard
 
-        const protocolBindings = supportedInterfaces
-            .map( ( iface ) => iface['protocol_binding'] )
+        const protocolBindings = Array.isArray( supportedInterfaces )
+            ? supportedInterfaces.map( ( iface ) => iface['protocol_binding'] )
+            : []
 
-        const firstInterface = supportedInterfaces[0]
-        const protocolVersion = firstInterface['protocol_version']
+        const firstInterface = Array.isArray( supportedInterfaces ) && supportedInterfaces.length > 0
+            ? supportedInterfaces[0]
+            : null
+        const protocolVersion = firstInterface ? firstInterface['protocol_version'] : null
 
-        const skillsSummary = skills
-            .map( ( skill ) => {
+        const skillsSummary = Array.isArray( skills )
+            ? skills.map( ( skill ) => {
                 const { id, name: skillName } = skill
 
                 return { id, name: skillName }
             } )
+            : []
 
         const entries = {
             url: endpoint,
@@ -24,7 +28,7 @@ class SnapshotBuilder {
             agentVersion: version,
             providerOrganization: provider ? provider['organization'] : null,
             providerUrl: provider ? provider['url'] : null,
-            skillCount: skills.length,
+            skillCount: Array.isArray( skills ) ? skills.length : 0,
             skills: skillsSummary,
             protocolBindings,
             protocolVersion,

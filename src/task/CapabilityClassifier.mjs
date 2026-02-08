@@ -4,8 +4,9 @@ class CapabilityClassifier {
     static classify( { agentCard } ) {
         const { capabilities, skills, security_schemes: securitySchemes, provider, supported_interfaces: supportedInterfaces, documentation_url: documentationUrl } = agentCard
 
-        const protocolBindings = supportedInterfaces
-            .map( ( iface ) => iface['protocol_binding'] )
+        const protocolBindings = Array.isArray( supportedInterfaces )
+            ? supportedInterfaces.map( ( iface ) => iface['protocol_binding'] )
+            : []
 
         const categories = {
             isReachable: true,

@@ -44,6 +44,15 @@ class A2aAgentValidator {
 
         const { messages: structureMessages } = CardStructureValidator.validate( { agentCard } )
 
+        if( structureMessages.length > 0 ) {
+            const { categories, entries } = SnapshotBuilder.buildEmpty( { endpoint } )
+            categories['isReachable'] = true
+            categories['hasAgentCard'] = true
+            const allMessages = [ ...fetchMessages, ...structureMessages ]
+
+            return { status: false, messages: allMessages, categories, entries }
+        }
+
         const { categories } = CapabilityClassifier.classify( { agentCard } )
         const { categories: snapshotCategories, entries } = SnapshotBuilder.build( { endpoint, agentCard, categories } )
 

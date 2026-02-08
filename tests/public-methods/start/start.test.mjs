@@ -196,12 +196,33 @@ describe( 'A2aAgentValidator.start', () => {
                 text: async () => JSON.stringify( invalidCard )
             } )
 
-            const { status, messages, categories } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
+            const { status, messages, categories, entries } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
 
             expect( status ).toBe( false )
             expect( messages ).toContain( 'CSV-020: Missing required field "name"' )
             expect( categories['isReachable'] ).toBe( true )
             expect( categories['hasAgentCard'] ).toBe( true )
+            expect( entries['url'] ).toBe( TEST_ENDPOINT )
+        } )
+
+
+        test( 'returns buildEmpty with structure messages when supported_interfaces missing', async () => {
+            const { supported_interfaces, ...cardWithout } = VALID_AGENT_CARD
+
+            globalThis.fetch = jest.fn().mockResolvedValue( {
+                ok: true,
+                status: 200,
+                text: async () => JSON.stringify( cardWithout )
+            } )
+
+            const { status, messages, categories, entries } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
+
+            expect( status ).toBe( false )
+            expect( messages ).toContain( 'CSV-023: Missing required field "supported_interfaces"' )
+            expect( categories['isReachable'] ).toBe( true )
+            expect( categories['hasAgentCard'] ).toBe( true )
+            expect( categories['hasValidStructure'] ).toBe( false )
+            expect( entries['agentName'] ).toBeNull()
         } )
     } )
 } )

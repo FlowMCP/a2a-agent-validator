@@ -168,5 +168,14 @@ describe( 'CapabilityClassifier', () => {
 
             expect( categories['hasDocumentation'] ).toBe( false )
         } )
+
+
+        test( 'handles missing supported_interfaces without crash', () => {
+            const { supported_interfaces, ...cardWithout } = VALID_AGENT_CARD
+            const { categories } = CapabilityClassifier.classify( { agentCard: cardWithout } )
+
+            expect( categories['supportsJsonRpc'] ).toBe( false )
+            expect( categories['supportsGrpc'] ).toBe( false )
+        } )
     } )
 } )

@@ -129,6 +129,24 @@ describe( 'SnapshotBuilder', () => {
 
             expect( categories ).toEqual( FULL_CATEGORIES )
         } )
+
+
+        test( 'returns empty protocolBindings when supported_interfaces is missing', () => {
+            const { supported_interfaces, ...cardWithout } = VALID_AGENT_CARD
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: cardWithout, categories: FULL_CATEGORIES } )
+
+            expect( entries['protocolBindings'] ).toEqual( [] )
+            expect( entries['protocolVersion'] ).toBeNull()
+        } )
+
+
+        test( 'returns empty skills when skills is missing', () => {
+            const { skills, ...cardWithout } = VALID_AGENT_CARD
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: cardWithout, categories: FULL_CATEGORIES } )
+
+            expect( entries['skills'] ).toEqual( [] )
+            expect( entries['skillCount'] ).toBe( 0 )
+        } )
     } )
 
 
