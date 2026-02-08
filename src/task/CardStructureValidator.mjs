@@ -61,8 +61,9 @@ class CardStructureValidator {
                 } else {
                     try {
                         const parsed = new URL( iface['url'] )
+                        const isLocal = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1'
 
-                        if( parsed.protocol !== 'https:' ) {
+                        if( parsed.protocol !== 'https:' && !isLocal ) {
                             struct['messages'].push( `CSV-031: supported_interfaces[${index}].url: Must be a valid HTTPS URL` )
                         }
                     } catch( _e ) {
