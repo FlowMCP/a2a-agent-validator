@@ -1,12 +1,12 @@
 import { CapabilityClassifier } from '../../../src/task/CapabilityClassifier.mjs'
-import { VALID_AGENT_CARD, MINIMAL_AGENT_CARD, EXPECTED_CATEGORY_KEYS } from '../../helpers/config.mjs'
+import { VALID_AGENT_CARD, MINIMAL_AGENT_CARD, AGENT_CARD_WITH_AP2_EXTENSION, AGENT_CARD_WITH_ERC8004_SERVICE, MOCK_EXTENSIONS_HEADER, EXPECTED_CATEGORY_KEYS } from '../../helpers/config.mjs'
 
 
 describe( 'CapabilityClassifier', () => {
 
     describe( 'classify — full agent card', () => {
 
-        test( 'returns all 12 category keys', () => {
+        test( 'returns all 14 category keys', () => {
             const { categories } = CapabilityClassifier.classify( { agentCard: VALID_AGENT_CARD } )
             const keys = Object.keys( categories )
 
@@ -176,6 +176,115 @@ describe( 'CapabilityClassifier', () => {
 
             expect( categories['supportsJsonRpc'] ).toBe( false )
             expect( categories['supportsGrpc'] ).toBe( false )
+        } )
+    } )
+
+
+    describe( 'classify — AP2 detection', () => {
+
+        test( 'detects AP2 from extensions header', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: MINIMAL_AGENT_CARD, extensions: MOCK_EXTENSIONS_HEADER } )
+
+            expect( categories['supportsAp2'] ).toBe( true )
+        } )
+
+
+        test( 'does not detect AP2 when extensions header is null', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: MINIMAL_AGENT_CARD, extensions: null } )
+
+            expect( categories['supportsAp2'] ).toBe( false )
+        } )
+
+
+        test( 'detects AP2 from agentCard capabilities extensions field', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: AGENT_CARD_WITH_AP2_EXTENSION } )
+
+            expect( categories['supportsAp2'] ).toBe( true )
+        } )
+
+
+        test( 'does not detect AP2 when extensions have unrelated URIs', () => {
+            const card = {
+                ...MINIMAL_AGENT_CARD,
+                capabilities: {
+                    extensions: [
+                        { uri: 'urn:example:unrelated:v1', description: 'Unrelated', required: false }
+                    ]
+                }
+            }
+            const { categories } = CapabilityClassifier.classify( { agentCard: card } )
+
+            expect( categories['supportsAp2'] ).toBe( false )
+        } )
+
+
+        test( 'detects AP2 case-insensitively from header', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: MINIMAL_AGENT_CARD, extensions: 'AP2=https://example.com/AP2/v2.0' } )
+
+            expect( categories['supportsAp2'] ).toBe( true )
+        } )
+    } )
+
+
+    describe( 'classify — ERC-8004 service link detection', () => {
+
+        test( 'detects ERC-8004 service from services array', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: AGENT_CARD_WITH_ERC8004_SERVICE } )
+
+            expect( categories['hasErc8004ServiceLink'] ).toBe( true )
+        } )
+
+
+        test( 'does not detect ERC-8004 when no services array', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: MINIMAL_AGENT_CARD } )
+
+            expect( categories['hasErc8004ServiceLink'] ).toBe( false )
+        } )
+
+
+        test( 'does not detect ERC-8004 when services have no matching type', () => {
+            const card = {
+                ...MINIMAL_AGENT_CARD,
+                services: [
+                    { type: 'rest-api', url: 'https://api.example.com', description: 'REST API' }
+                ]
+            }
+            const { categories } = CapabilityClassifier.classify( { agentCard: card } )
+
+            expect( categories['hasErc8004ServiceLink'] ).toBe( false )
+        } )
+
+
+        test( 'detects ERC-8004 with hyphenated type', () => {
+            const card = {
+                ...MINIMAL_AGENT_CARD,
+                services: [
+                    { type: 'erc-8004-registry', url: 'https://registry.example.com', description: 'Registry' }
+                ]
+            }
+            const { categories } = CapabilityClassifier.classify( { agentCard: card } )
+
+            expect( categories['hasErc8004ServiceLink'] ).toBe( true )
+        } )
+    } )
+
+
+    describe( 'classify — combined AP2 + ERC-8004', () => {
+
+        test( 'detects both AP2 and ERC-8004 simultaneously', () => {
+            const card = {
+                ...AGENT_CARD_WITH_ERC8004_SERVICE,
+                capabilities: {
+                    ...MINIMAL_AGENT_CARD['capabilities'],
+                    extensions: [
+                        { uri: 'https://github.com/google-agentic-commerce/AP2/v1.0', description: 'AP2', required: false }
+                    ]
+                }
+            }
+            const { categories } = CapabilityClassifier.classify( { agentCard: card, extensions: MOCK_EXTENSIONS_HEADER } )
+
+            expect( categories['supportsAp2'] ).toBe( true )
+            expect( categories['hasErc8004ServiceLink'] ).toBe( true )
         } )
     } )
 } )

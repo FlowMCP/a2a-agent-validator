@@ -129,7 +129,43 @@ const AGENT_CARD_WITH_EXTENSIONS = {
 }
 
 
-// --- Expected Category Keys (12) ---
+// --- Agent Card with AP2 Extension in capabilities ---
+
+const AGENT_CARD_WITH_AP2_EXTENSION = {
+    ...MINIMAL_AGENT_CARD,
+    capabilities: {
+        ...MINIMAL_AGENT_CARD['capabilities'],
+        extensions: [
+            {
+                uri: 'https://github.com/google-agentic-commerce/AP2/v1.0',
+                description: 'Agentic Payment Protocol',
+                required: false
+            }
+        ]
+    }
+}
+
+
+// --- Agent Card with ERC-8004 Service ---
+
+const AGENT_CARD_WITH_ERC8004_SERVICE = {
+    ...MINIMAL_AGENT_CARD,
+    services: [
+        {
+            type: 'erc8004-registry',
+            url: 'https://registry.example.com/erc8004',
+            description: 'ERC-8004 Agent Registry'
+        }
+    ]
+}
+
+
+// --- Mock Extensions Header ---
+
+const MOCK_EXTENSIONS_HEADER = 'ap2=https://github.com/google-agentic-commerce/AP2/v1.0'
+
+
+// --- Expected Category Keys (14) ---
 
 const EXPECTED_CATEGORY_KEYS = [
     'isReachable',
@@ -143,11 +179,13 @@ const EXPECTED_CATEGORY_KEYS = [
     'supportsJsonRpc',
     'supportsGrpc',
     'supportsExtendedCard',
-    'hasDocumentation'
+    'hasDocumentation',
+    'supportsAp2',
+    'hasErc8004ServiceLink'
 ]
 
 
-// --- Expected Entry Keys (13) ---
+// --- Expected Entry Keys (16) ---
 
 const EXPECTED_ENTRY_KEYS = [
     'url',
@@ -162,6 +200,9 @@ const EXPECTED_ENTRY_KEYS = [
     'protocolVersion',
     'defaultInputModes',
     'defaultOutputModes',
+    'ap2Version',
+    'erc8004ServiceUrl',
+    'extensions',
     'timestamp'
 ]
 
@@ -180,7 +221,9 @@ const FULL_CATEGORIES = {
     supportsJsonRpc: true,
     supportsGrpc: true,
     supportsExtendedCard: true,
-    hasDocumentation: true
+    hasDocumentation: true,
+    supportsAp2: true,
+    hasErc8004ServiceLink: true
 }
 
 
@@ -198,7 +241,9 @@ const EMPTY_CATEGORIES = {
     supportsJsonRpc: false,
     supportsGrpc: false,
     supportsExtendedCard: false,
-    hasDocumentation: false
+    hasDocumentation: false,
+    supportsAp2: false,
+    hasErc8004ServiceLink: false
 }
 
 
@@ -208,6 +253,9 @@ export {
     MINIMAL_AGENT_CARD,
     AGENT_CARD_WITH_OAUTH2,
     AGENT_CARD_WITH_EXTENSIONS,
+    AGENT_CARD_WITH_AP2_EXTENSION,
+    AGENT_CARD_WITH_ERC8004_SERVICE,
+    MOCK_EXTENSIONS_HEADER,
     EXPECTED_CATEGORY_KEYS,
     EXPECTED_ENTRY_KEYS,
     FULL_CATEGORIES,

@@ -1,12 +1,12 @@
 import { SnapshotBuilder } from '../../../src/task/SnapshotBuilder.mjs'
-import { TEST_ENDPOINT, VALID_AGENT_CARD, FULL_CATEGORIES, EMPTY_CATEGORIES, EXPECTED_ENTRY_KEYS, EXPECTED_CATEGORY_KEYS } from '../../helpers/config.mjs'
+import { TEST_ENDPOINT, VALID_AGENT_CARD, AGENT_CARD_WITH_ERC8004_SERVICE, MOCK_EXTENSIONS_HEADER, FULL_CATEGORIES, EMPTY_CATEGORIES, EXPECTED_ENTRY_KEYS, EXPECTED_CATEGORY_KEYS } from '../../helpers/config.mjs'
 
 
 describe( 'SnapshotBuilder', () => {
 
     describe( 'build', () => {
 
-        test( 'returns all 13 entry keys', () => {
+        test( 'returns all 16 entry keys', () => {
             const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES } )
             const keys = Object.keys( entries )
 
@@ -152,7 +152,7 @@ describe( 'SnapshotBuilder', () => {
 
     describe( 'buildEmpty', () => {
 
-        test( 'returns all 12 category keys', () => {
+        test( 'returns all 14 category keys', () => {
             const { categories } = SnapshotBuilder.buildEmpty( { endpoint: TEST_ENDPOINT } )
             const keys = Object.keys( categories )
 
@@ -160,7 +160,7 @@ describe( 'SnapshotBuilder', () => {
         } )
 
 
-        test( 'returns all 13 entry keys', () => {
+        test( 'returns all 16 entry keys', () => {
             const { entries } = SnapshotBuilder.buildEmpty( { endpoint: TEST_ENDPOINT } )
             const keys = Object.keys( entries )
 
@@ -196,6 +196,9 @@ describe( 'SnapshotBuilder', () => {
             expect( entries['protocolVersion'] ).toBeNull()
             expect( entries['defaultInputModes'] ).toBeNull()
             expect( entries['defaultOutputModes'] ).toBeNull()
+            expect( entries['ap2Version'] ).toBeNull()
+            expect( entries['erc8004ServiceUrl'] ).toBeNull()
+            expect( entries['extensions'] ).toBeNull()
         } )
 
 
@@ -203,6 +206,51 @@ describe( 'SnapshotBuilder', () => {
             const { entries } = SnapshotBuilder.buildEmpty( { endpoint: TEST_ENDPOINT } )
 
             expect( entries['timestamp'] ).toMatch( /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/ )
+        } )
+    } )
+
+
+    describe( 'build — new AP2 and ERC-8004 entries', () => {
+
+        test( 'extracts ap2Version from extensions header', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES, extensions: MOCK_EXTENSIONS_HEADER } )
+
+            expect( entries['ap2Version'] ).toBe( '1.0' )
+        } )
+
+
+        test( 'sets ap2Version to null when no extensions', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES } )
+
+            expect( entries['ap2Version'] ).toBeNull()
+        } )
+
+
+        test( 'extracts erc8004ServiceUrl from services array', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: AGENT_CARD_WITH_ERC8004_SERVICE, categories: FULL_CATEGORIES } )
+
+            expect( entries['erc8004ServiceUrl'] ).toBe( 'https://registry.example.com/erc8004' )
+        } )
+
+
+        test( 'sets erc8004ServiceUrl to null when no matching service', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES } )
+
+            expect( entries['erc8004ServiceUrl'] ).toBeNull()
+        } )
+
+
+        test( 'stores raw extensions header value', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES, extensions: MOCK_EXTENSIONS_HEADER } )
+
+            expect( entries['extensions'] ).toBe( MOCK_EXTENSIONS_HEADER )
+        } )
+
+
+        test( 'sets extensions to null when not provided', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES } )
+
+            expect( entries['extensions'] ).toBeNull()
         } )
     } )
 } )

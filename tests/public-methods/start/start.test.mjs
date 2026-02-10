@@ -4,6 +4,17 @@ import { A2aAgentValidator } from '../../../src/A2aAgentValidator.mjs'
 import { TEST_ENDPOINT, VALID_AGENT_CARD, MINIMAL_AGENT_CARD, EXPECTED_CATEGORY_KEYS, EXPECTED_ENTRY_KEYS, EMPTY_CATEGORIES } from '../../helpers/config.mjs'
 
 
+const mockHeaders = ( { extensionsValue = null } = {} ) => ( {
+    get: ( name ) => {
+        if( name.toLowerCase() === 'a2a-extensions' ) {
+            return extensionsValue
+        }
+
+        return null
+    }
+} )
+
+
 describe( 'A2aAgentValidator.start', () => {
 
     let originalFetch
@@ -82,10 +93,11 @@ describe( 'A2aAgentValidator.start', () => {
 
     describe( 'successful pipeline', () => {
 
-        test( 'returns all 12 category keys', async () => {
+        test( 'returns all 14 category keys', async () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
+                headers: mockHeaders(),
                 text: async () => JSON.stringify( VALID_AGENT_CARD )
             } )
 
@@ -96,10 +108,11 @@ describe( 'A2aAgentValidator.start', () => {
         } )
 
 
-        test( 'returns all 13 entry keys', async () => {
+        test( 'returns all 16 entry keys', async () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
+                headers: mockHeaders(),
                 text: async () => JSON.stringify( VALID_AGENT_CARD )
             } )
 
@@ -114,6 +127,7 @@ describe( 'A2aAgentValidator.start', () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
+                headers: mockHeaders(),
                 text: async () => JSON.stringify( VALID_AGENT_CARD )
             } )
 
@@ -128,6 +142,7 @@ describe( 'A2aAgentValidator.start', () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
+                headers: mockHeaders(),
                 text: async () => JSON.stringify( VALID_AGENT_CARD )
             } )
 
@@ -148,6 +163,7 @@ describe( 'A2aAgentValidator.start', () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
+                headers: mockHeaders(),
                 text: async () => JSON.stringify( VALID_AGENT_CARD )
             } )
 
@@ -164,6 +180,7 @@ describe( 'A2aAgentValidator.start', () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
+                headers: mockHeaders(),
                 text: async () => JSON.stringify( VALID_AGENT_CARD )
             } )
 
@@ -177,6 +194,7 @@ describe( 'A2aAgentValidator.start', () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
+                headers: mockHeaders(),
                 text: async () => JSON.stringify( VALID_AGENT_CARD )
             } )
 
@@ -193,6 +211,7 @@ describe( 'A2aAgentValidator.start', () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
+                headers: mockHeaders(),
                 text: async () => JSON.stringify( invalidCard )
             } )
 
@@ -212,6 +231,7 @@ describe( 'A2aAgentValidator.start', () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
+                headers: mockHeaders(),
                 text: async () => JSON.stringify( cardWithout )
             } )
 
@@ -223,6 +243,37 @@ describe( 'A2aAgentValidator.start', () => {
             expect( categories['hasAgentCard'] ).toBe( true )
             expect( categories['hasValidStructure'] ).toBe( false )
             expect( entries['agentName'] ).toBeNull()
+        } )
+
+
+        test( 'sets supportsAp2 and hasErc8004ServiceLink to false for standard card', async () => {
+            globalThis.fetch = jest.fn().mockResolvedValue( {
+                ok: true,
+                status: 200,
+                headers: mockHeaders(),
+                text: async () => JSON.stringify( VALID_AGENT_CARD )
+            } )
+
+            const { categories } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
+
+            expect( categories['supportsAp2'] ).toBe( false )
+            expect( categories['hasErc8004ServiceLink'] ).toBe( false )
+        } )
+
+
+        test( 'includes new entry fields as null for standard card', async () => {
+            globalThis.fetch = jest.fn().mockResolvedValue( {
+                ok: true,
+                status: 200,
+                headers: mockHeaders(),
+                text: async () => JSON.stringify( VALID_AGENT_CARD )
+            } )
+
+            const { entries } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
+
+            expect( entries['ap2Version'] ).toBeNull()
+            expect( entries['erc8004ServiceUrl'] ).toBeNull()
+            expect( entries['extensions'] ).toBeNull()
         } )
     } )
 } )

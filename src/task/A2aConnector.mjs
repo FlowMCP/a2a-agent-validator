@@ -2,7 +2,7 @@ class A2aConnector {
 
 
     static async fetch( { endpoint, timeout } ) {
-        const struct = { status: false, messages: [], agentCard: null }
+        const struct = { status: false, messages: [], agentCard: null, extensions: null }
 
         const normalizedEndpoint = endpoint.replace( /\/+$/, '' )
         const url = `${normalizedEndpoint}/.well-known/agent-card.json`
@@ -18,6 +18,11 @@ class A2aConnector {
             } )
 
             clearTimeout( timeoutId )
+
+            const extensionsHeader = response.headers && typeof response.headers.get === 'function'
+                ? response.headers.get( 'A2A-Extensions' )
+                : null
+            struct['extensions'] = extensionsHeader || null
 
             if( response.status === 404 ) {
                 struct['messages'].push( 'CON-011: Agent Card not found (HTTP 404)' )

@@ -1,7 +1,7 @@
 class SnapshotBuilder {
 
 
-    static build( { endpoint, agentCard, categories } ) {
+    static build( { endpoint, agentCard, categories, extensions = null } ) {
         const { name, description, version, provider, supported_interfaces: supportedInterfaces, default_input_modes: defaultInputModes, default_output_modes: defaultOutputModes, skills } = agentCard
 
         const protocolBindings = Array.isArray( supportedInterfaces )
@@ -21,6 +21,9 @@ class SnapshotBuilder {
             } )
             : []
 
+        const ap2Version = SnapshotBuilder.#extractAp2Version( { extensions } )
+        const erc8004ServiceUrl = SnapshotBuilder.#extractErc8004ServiceUrl( { agentCard } )
+
         const entries = {
             url: endpoint,
             agentName: name,
@@ -34,6 +37,9 @@ class SnapshotBuilder {
             protocolVersion,
             defaultInputModes: defaultInputModes,
             defaultOutputModes: defaultOutputModes,
+            ap2Version,
+            erc8004ServiceUrl,
+            extensions,
             timestamp: new Date().toISOString()
         }
 
@@ -54,7 +60,9 @@ class SnapshotBuilder {
             supportsJsonRpc: false,
             supportsGrpc: false,
             supportsExtendedCard: false,
-            hasDocumentation: false
+            hasDocumentation: false,
+            supportsAp2: false,
+            hasErc8004ServiceLink: false
         }
 
         const entries = {
@@ -70,10 +78,40 @@ class SnapshotBuilder {
             protocolVersion: null,
             defaultInputModes: null,
             defaultOutputModes: null,
+            ap2Version: null,
+            erc8004ServiceUrl: null,
+            extensions: null,
             timestamp: new Date().toISOString()
         }
 
         return { categories, entries }
+    }
+
+
+    static #extractAp2Version( { extensions } ) {
+        if( typeof extensions !== 'string' || extensions.length === 0 ) {
+            return null
+        }
+
+        const match = extensions.match( /ap2[^,]*?\/v?([\d.]+)/i )
+
+        return match ? match[1] : null
+    }
+
+
+    static #extractErc8004ServiceUrl( { agentCard } ) {
+        const services = Array.isArray( agentCard['services'] )
+            ? agentCard['services']
+            : []
+
+        const found = services
+            .find( ( service ) => {
+                const type = ( service['type'] || '' ).toLowerCase()
+
+                return type.includes( 'erc8004' ) || type.includes( 'erc-8004' )
+            } )
+
+        return found ? ( found['url'] || null ) : null
     }
 }
 

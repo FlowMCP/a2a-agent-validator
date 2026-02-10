@@ -33,7 +33,7 @@ class A2aAgentValidator {
         const { status: validationStatus, messages: validationMessages } = Validation.validationStart( { endpoint, timeout } )
         if( !validationStatus ) { Validation.error( { messages: validationMessages } ) }
 
-        const { status: fetchStatus, messages: fetchMessages, agentCard } = await A2aConnector.fetch( { endpoint, timeout } )
+        const { status: fetchStatus, messages: fetchMessages, agentCard, extensions } = await A2aConnector.fetch( { endpoint, timeout } )
 
         if( !fetchStatus ) {
             const { categories, entries } = SnapshotBuilder.buildEmpty( { endpoint } )
@@ -53,8 +53,8 @@ class A2aAgentValidator {
             return { status: false, messages: allMessages, categories, entries }
         }
 
-        const { categories } = CapabilityClassifier.classify( { agentCard } )
-        const { categories: snapshotCategories, entries } = SnapshotBuilder.build( { endpoint, agentCard, categories } )
+        const { categories } = CapabilityClassifier.classify( { agentCard, extensions } )
+        const { categories: snapshotCategories, entries } = SnapshotBuilder.build( { endpoint, agentCard, categories, extensions } )
 
         const allMessages = [ ...fetchMessages, ...structureMessages ]
         const status = allMessages.length === 0
@@ -138,7 +138,7 @@ class A2aAgentValidator {
     static #diffCapabilities( { before, after } ) {
         const changed = {}
 
-        const fields = [ 'supportsStreaming', 'supportsPushNotifications', 'supportsExtendedCard' ]
+        const fields = [ 'supportsStreaming', 'supportsPushNotifications', 'supportsExtendedCard', 'supportsAp2', 'hasErc8004ServiceLink' ]
 
         fields
             .forEach( ( field ) => {
