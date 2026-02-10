@@ -160,12 +160,63 @@ const AGENT_CARD_WITH_ERC8004_SERVICE = {
 }
 
 
+// --- Agent Card with x402 Extension ---
+
+const AGENT_CARD_WITH_X402_EXTENSION = {
+    ...MINIMAL_AGENT_CARD,
+    capabilities: {
+        ...MINIMAL_AGENT_CARD['capabilities'],
+        extensions: [
+            {
+                uri: 'https://github.com/google-a2a/a2a-x402/v0.1',
+                description: 'Supports payments using the x402 protocol for on-chain settlement.',
+                required: true
+            }
+        ]
+    }
+}
+
+
+// --- Agent Card with Dual Extensions (AP2 + x402 = Embedded Flow) ---
+
+const AGENT_CARD_WITH_DUAL_EXTENSIONS = {
+    ...MINIMAL_AGENT_CARD,
+    capabilities: {
+        ...MINIMAL_AGENT_CARD['capabilities'],
+        extensions: [
+            {
+                uri: 'https://github.com/google-agentic-commerce/ap2/tree/v0.1',
+                description: 'Supports the Agent Payments Protocol.',
+                required: true,
+                params: {
+                    roles: [ 'merchant' ]
+                }
+            },
+            {
+                uri: 'https://github.com/google-a2a/a2a-x402/v0.1',
+                description: 'Supports payments using the x402 protocol.',
+                required: true
+            }
+        ]
+    }
+}
+
+
 // --- Mock Extensions Header ---
 
 const MOCK_EXTENSIONS_HEADER = 'ap2=https://github.com/google-agentic-commerce/AP2/v1.0'
 
 
-// --- Expected Category Keys (14) ---
+// --- Mock Extension Header URIs (official format) ---
+
+const MOCK_AP2_HEADER_URI = 'https://github.com/google-agentic-commerce/ap2/tree/v0.1'
+
+const MOCK_X402_HEADER_URI = 'https://github.com/google-a2a/a2a-x402/v0.1'
+
+const MOCK_DUAL_HEADER_URI = 'https://github.com/google-agentic-commerce/ap2/tree/v0.1, https://github.com/google-a2a/a2a-x402/v0.1'
+
+
+// --- Expected Category Keys (16) ---
 
 const EXPECTED_CATEGORY_KEYS = [
     'isReachable',
@@ -181,11 +232,13 @@ const EXPECTED_CATEGORY_KEYS = [
     'supportsExtendedCard',
     'hasDocumentation',
     'supportsAp2',
+    'supportsX402',
+    'supportsEmbeddedFlow',
     'hasErc8004ServiceLink'
 ]
 
 
-// --- Expected Entry Keys (16) ---
+// --- Expected Entry Keys (18) ---
 
 const EXPECTED_ENTRY_KEYS = [
     'url',
@@ -201,6 +254,8 @@ const EXPECTED_ENTRY_KEYS = [
     'defaultInputModes',
     'defaultOutputModes',
     'ap2Version',
+    'ap2Roles',
+    'x402Version',
     'erc8004ServiceUrl',
     'extensions',
     'timestamp'
@@ -223,6 +278,8 @@ const FULL_CATEGORIES = {
     supportsExtendedCard: true,
     hasDocumentation: true,
     supportsAp2: true,
+    supportsX402: true,
+    supportsEmbeddedFlow: true,
     hasErc8004ServiceLink: true
 }
 
@@ -243,6 +300,8 @@ const EMPTY_CATEGORIES = {
     supportsExtendedCard: false,
     hasDocumentation: false,
     supportsAp2: false,
+    supportsX402: false,
+    supportsEmbeddedFlow: false,
     hasErc8004ServiceLink: false
 }
 
@@ -254,8 +313,13 @@ export {
     AGENT_CARD_WITH_OAUTH2,
     AGENT_CARD_WITH_EXTENSIONS,
     AGENT_CARD_WITH_AP2_EXTENSION,
+    AGENT_CARD_WITH_X402_EXTENSION,
+    AGENT_CARD_WITH_DUAL_EXTENSIONS,
     AGENT_CARD_WITH_ERC8004_SERVICE,
     MOCK_EXTENSIONS_HEADER,
+    MOCK_AP2_HEADER_URI,
+    MOCK_X402_HEADER_URI,
+    MOCK_DUAL_HEADER_URI,
     EXPECTED_CATEGORY_KEYS,
     EXPECTED_ENTRY_KEYS,
     FULL_CATEGORIES,

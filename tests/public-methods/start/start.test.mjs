@@ -6,7 +6,7 @@ import { TEST_ENDPOINT, VALID_AGENT_CARD, MINIMAL_AGENT_CARD, EXPECTED_CATEGORY_
 
 const mockHeaders = ( { extensionsValue = null } = {} ) => ( {
     get: ( name ) => {
-        if( name.toLowerCase() === 'a2a-extensions' ) {
+        if( name.toLowerCase() === 'x-a2a-extensions' ) {
             return extensionsValue
         }
 
@@ -93,7 +93,7 @@ describe( 'A2aAgentValidator.start', () => {
 
     describe( 'successful pipeline', () => {
 
-        test( 'returns all 14 category keys', async () => {
+        test( 'returns all 16 category keys', async () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
@@ -108,7 +108,7 @@ describe( 'A2aAgentValidator.start', () => {
         } )
 
 
-        test( 'returns all 16 entry keys', async () => {
+        test( 'returns all 18 entry keys', async () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
@@ -246,7 +246,7 @@ describe( 'A2aAgentValidator.start', () => {
         } )
 
 
-        test( 'sets supportsAp2 and hasErc8004ServiceLink to false for standard card', async () => {
+        test( 'sets extension categories to false for standard card', async () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
@@ -257,6 +257,8 @@ describe( 'A2aAgentValidator.start', () => {
             const { categories } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
 
             expect( categories['supportsAp2'] ).toBe( false )
+            expect( categories['supportsX402'] ).toBe( false )
+            expect( categories['supportsEmbeddedFlow'] ).toBe( false )
             expect( categories['hasErc8004ServiceLink'] ).toBe( false )
         } )
 
@@ -272,6 +274,8 @@ describe( 'A2aAgentValidator.start', () => {
             const { entries } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
 
             expect( entries['ap2Version'] ).toBeNull()
+            expect( entries['ap2Roles'] ).toBeNull()
+            expect( entries['x402Version'] ).toBeNull()
             expect( entries['erc8004ServiceUrl'] ).toBeNull()
             expect( entries['extensions'] ).toBeNull()
         } )

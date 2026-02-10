@@ -20,7 +20,7 @@ class A2aConnector {
             clearTimeout( timeoutId )
 
             const extensionsHeader = response.headers && typeof response.headers.get === 'function'
-                ? response.headers.get( 'A2A-Extensions' )
+                ? response.headers.get( 'X-A2A-Extensions' )
                 : null
             struct['extensions'] = extensionsHeader || null
 

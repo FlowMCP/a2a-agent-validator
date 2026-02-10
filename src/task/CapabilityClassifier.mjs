@@ -22,6 +22,8 @@ class CapabilityClassifier {
             supportsExtendedCard: capabilities['extended_agent_card'] === true,
             hasDocumentation: documentationUrl !== undefined && documentationUrl !== null && documentationUrl !== '',
             supportsAp2: CapabilityClassifier.#detectAp2Extension( { extensions, agentCard } ),
+            supportsX402: CapabilityClassifier.#detectX402Extension( { extensions, agentCard } ),
+            supportsEmbeddedFlow: CapabilityClassifier.#detectAp2Extension( { extensions, agentCard } ) && CapabilityClassifier.#detectX402Extension( { extensions, agentCard } ),
             hasErc8004ServiceLink: CapabilityClassifier.#detectErc8004Service( { agentCard } )
         }
 
@@ -48,6 +50,31 @@ class CapabilityClassifier {
                 const lowerUri = uri.toLowerCase()
 
                 return lowerUri.includes( 'ap2' ) || lowerUri.includes( 'agentic-commerce' ) || lowerUri.includes( 'agent-payments' )
+            } )
+
+        return found !== undefined
+    }
+
+
+    static #detectX402Extension( { extensions, agentCard } ) {
+        if( typeof extensions === 'string' && extensions.length > 0 ) {
+            const lower = extensions.toLowerCase()
+
+            if( lower.includes( 'x402' ) || lower.includes( 'a2a-x402' ) ) {
+                return true
+            }
+        }
+
+        const cardExtensions = agentCard['capabilities'] && Array.isArray( agentCard['capabilities']['extensions'] )
+            ? agentCard['capabilities']['extensions']
+            : []
+
+        const found = cardExtensions
+            .find( ( ext ) => {
+                const uri = typeof ext === 'string' ? ext : ( ext['uri'] || '' )
+                const lowerUri = uri.toLowerCase()
+
+                return lowerUri.includes( 'x402' ) || lowerUri.includes( 'a2a-x402' )
             } )
 
         return found !== undefined

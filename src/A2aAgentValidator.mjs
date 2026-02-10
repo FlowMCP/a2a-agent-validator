@@ -138,7 +138,7 @@ class A2aAgentValidator {
     static #diffCapabilities( { before, after } ) {
         const changed = {}
 
-        const fields = [ 'supportsStreaming', 'supportsPushNotifications', 'supportsExtendedCard', 'supportsAp2', 'hasErc8004ServiceLink' ]
+        const fields = [ 'supportsStreaming', 'supportsPushNotifications', 'supportsExtendedCard', 'supportsAp2', 'supportsX402', 'supportsEmbeddedFlow', 'hasErc8004ServiceLink' ]
 
         fields
             .forEach( ( field ) => {

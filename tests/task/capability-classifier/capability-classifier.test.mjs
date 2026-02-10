@@ -1,12 +1,12 @@
 import { CapabilityClassifier } from '../../../src/task/CapabilityClassifier.mjs'
-import { VALID_AGENT_CARD, MINIMAL_AGENT_CARD, AGENT_CARD_WITH_AP2_EXTENSION, AGENT_CARD_WITH_ERC8004_SERVICE, MOCK_EXTENSIONS_HEADER, EXPECTED_CATEGORY_KEYS } from '../../helpers/config.mjs'
+import { VALID_AGENT_CARD, MINIMAL_AGENT_CARD, AGENT_CARD_WITH_AP2_EXTENSION, AGENT_CARD_WITH_X402_EXTENSION, AGENT_CARD_WITH_DUAL_EXTENSIONS, AGENT_CARD_WITH_ERC8004_SERVICE, MOCK_EXTENSIONS_HEADER, MOCK_X402_HEADER_URI, MOCK_DUAL_HEADER_URI, EXPECTED_CATEGORY_KEYS } from '../../helpers/config.mjs'
 
 
 describe( 'CapabilityClassifier', () => {
 
     describe( 'classify — full agent card', () => {
 
-        test( 'returns all 14 category keys', () => {
+        test( 'returns all 16 category keys', () => {
             const { categories } = CapabilityClassifier.classify( { agentCard: VALID_AGENT_CARD } )
             const keys = Object.keys( categories )
 
@@ -265,6 +265,82 @@ describe( 'CapabilityClassifier', () => {
             const { categories } = CapabilityClassifier.classify( { agentCard: card } )
 
             expect( categories['hasErc8004ServiceLink'] ).toBe( true )
+        } )
+    } )
+
+
+    describe( 'classify — x402 detection', () => {
+
+        test( 'detects x402 from extensions header', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: MINIMAL_AGENT_CARD, extensions: MOCK_X402_HEADER_URI } )
+
+            expect( categories['supportsX402'] ).toBe( true )
+        } )
+
+
+        test( 'does not detect x402 when extensions header is null', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: MINIMAL_AGENT_CARD, extensions: null } )
+
+            expect( categories['supportsX402'] ).toBe( false )
+        } )
+
+
+        test( 'detects x402 from agentCard capabilities extensions field', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: AGENT_CARD_WITH_X402_EXTENSION } )
+
+            expect( categories['supportsX402'] ).toBe( true )
+        } )
+
+
+        test( 'does not detect x402 when extensions have unrelated URIs', () => {
+            const card = {
+                ...MINIMAL_AGENT_CARD,
+                capabilities: {
+                    extensions: [
+                        { uri: 'urn:example:unrelated:v1', description: 'Unrelated', required: false }
+                    ]
+                }
+            }
+            const { categories } = CapabilityClassifier.classify( { agentCard: card } )
+
+            expect( categories['supportsX402'] ).toBe( false )
+        } )
+    } )
+
+
+    describe( 'classify — embedded flow detection (AP2 + x402)', () => {
+
+        test( 'detects embedded flow when both AP2 and x402 in card extensions', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: AGENT_CARD_WITH_DUAL_EXTENSIONS } )
+
+            expect( categories['supportsEmbeddedFlow'] ).toBe( true )
+            expect( categories['supportsAp2'] ).toBe( true )
+            expect( categories['supportsX402'] ).toBe( true )
+        } )
+
+
+        test( 'does not detect embedded flow with only AP2', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: AGENT_CARD_WITH_AP2_EXTENSION } )
+
+            expect( categories['supportsEmbeddedFlow'] ).toBe( false )
+            expect( categories['supportsAp2'] ).toBe( true )
+            expect( categories['supportsX402'] ).toBe( false )
+        } )
+
+
+        test( 'does not detect embedded flow with only x402', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: AGENT_CARD_WITH_X402_EXTENSION } )
+
+            expect( categories['supportsEmbeddedFlow'] ).toBe( false )
+            expect( categories['supportsAp2'] ).toBe( false )
+            expect( categories['supportsX402'] ).toBe( true )
+        } )
+
+
+        test( 'detects embedded flow from dual header URI', () => {
+            const { categories } = CapabilityClassifier.classify( { agentCard: MINIMAL_AGENT_CARD, extensions: MOCK_DUAL_HEADER_URI } )
+
+            expect( categories['supportsEmbeddedFlow'] ).toBe( true )
         } )
     } )
 

@@ -9,7 +9,7 @@ const TIMEOUT = 10000
 
 const mockHeaders = ( { extensionsValue = null } = {} ) => ( {
     get: ( name ) => {
-        if( name.toLowerCase() === 'a2a-extensions' ) {
+        if( name.toLowerCase() === 'x-a2a-extensions' ) {
             return extensionsValue
         }
 

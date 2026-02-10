@@ -1,12 +1,12 @@
 import { SnapshotBuilder } from '../../../src/task/SnapshotBuilder.mjs'
-import { TEST_ENDPOINT, VALID_AGENT_CARD, AGENT_CARD_WITH_ERC8004_SERVICE, MOCK_EXTENSIONS_HEADER, FULL_CATEGORIES, EMPTY_CATEGORIES, EXPECTED_ENTRY_KEYS, EXPECTED_CATEGORY_KEYS } from '../../helpers/config.mjs'
+import { TEST_ENDPOINT, VALID_AGENT_CARD, AGENT_CARD_WITH_AP2_EXTENSION, AGENT_CARD_WITH_X402_EXTENSION, AGENT_CARD_WITH_DUAL_EXTENSIONS, AGENT_CARD_WITH_ERC8004_SERVICE, MOCK_EXTENSIONS_HEADER, MOCK_AP2_HEADER_URI, MOCK_X402_HEADER_URI, FULL_CATEGORIES, EMPTY_CATEGORIES, EXPECTED_ENTRY_KEYS, EXPECTED_CATEGORY_KEYS } from '../../helpers/config.mjs'
 
 
 describe( 'SnapshotBuilder', () => {
 
     describe( 'build', () => {
 
-        test( 'returns all 16 entry keys', () => {
+        test( 'returns all 18 entry keys', () => {
             const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES } )
             const keys = Object.keys( entries )
 
@@ -152,7 +152,7 @@ describe( 'SnapshotBuilder', () => {
 
     describe( 'buildEmpty', () => {
 
-        test( 'returns all 14 category keys', () => {
+        test( 'returns all 16 category keys', () => {
             const { categories } = SnapshotBuilder.buildEmpty( { endpoint: TEST_ENDPOINT } )
             const keys = Object.keys( categories )
 
@@ -160,7 +160,7 @@ describe( 'SnapshotBuilder', () => {
         } )
 
 
-        test( 'returns all 16 entry keys', () => {
+        test( 'returns all 18 entry keys', () => {
             const { entries } = SnapshotBuilder.buildEmpty( { endpoint: TEST_ENDPOINT } )
             const keys = Object.keys( entries )
 
@@ -197,6 +197,8 @@ describe( 'SnapshotBuilder', () => {
             expect( entries['defaultInputModes'] ).toBeNull()
             expect( entries['defaultOutputModes'] ).toBeNull()
             expect( entries['ap2Version'] ).toBeNull()
+            expect( entries['ap2Roles'] ).toBeNull()
+            expect( entries['x402Version'] ).toBeNull()
             expect( entries['erc8004ServiceUrl'] ).toBeNull()
             expect( entries['extensions'] ).toBeNull()
         } )
@@ -210,9 +212,16 @@ describe( 'SnapshotBuilder', () => {
     } )
 
 
-    describe( 'build — new AP2 and ERC-8004 entries', () => {
+    describe( 'build — AP2 and ERC-8004 entries', () => {
 
-        test( 'extracts ap2Version from extensions header', () => {
+        test( 'extracts ap2Version from card extensions URI', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: AGENT_CARD_WITH_AP2_EXTENSION, categories: FULL_CATEGORIES } )
+
+            expect( entries['ap2Version'] ).toBe( '1.0' )
+        } )
+
+
+        test( 'extracts ap2Version from extensions header as fallback', () => {
             const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES, extensions: MOCK_EXTENSIONS_HEADER } )
 
             expect( entries['ap2Version'] ).toBe( '1.0' )
@@ -251,6 +260,62 @@ describe( 'SnapshotBuilder', () => {
             const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES } )
 
             expect( entries['extensions'] ).toBeNull()
+        } )
+    } )
+
+
+    describe( 'build — AP2 roles extraction', () => {
+
+        test( 'extracts ap2Roles from dual extension card', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: AGENT_CARD_WITH_DUAL_EXTENSIONS, categories: FULL_CATEGORIES } )
+
+            expect( entries['ap2Roles'] ).toEqual( [ 'merchant' ] )
+        } )
+
+
+        test( 'sets ap2Roles to null when AP2 extension has no params', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: AGENT_CARD_WITH_AP2_EXTENSION, categories: FULL_CATEGORIES } )
+
+            expect( entries['ap2Roles'] ).toBeNull()
+        } )
+
+
+        test( 'sets ap2Roles to null when no AP2 extension', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES } )
+
+            expect( entries['ap2Roles'] ).toBeNull()
+        } )
+    } )
+
+
+    describe( 'build — x402 version extraction', () => {
+
+        test( 'extracts x402Version from card extensions URI', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: AGENT_CARD_WITH_X402_EXTENSION, categories: FULL_CATEGORIES } )
+
+            expect( entries['x402Version'] ).toBe( '0.1' )
+        } )
+
+
+        test( 'extracts x402Version from extensions header as fallback', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES, extensions: MOCK_X402_HEADER_URI } )
+
+            expect( entries['x402Version'] ).toBe( '0.1' )
+        } )
+
+
+        test( 'sets x402Version to null when no x402 extension', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: VALID_AGENT_CARD, categories: FULL_CATEGORIES } )
+
+            expect( entries['x402Version'] ).toBeNull()
+        } )
+
+
+        test( 'extracts both ap2Version and x402Version from dual extension card', () => {
+            const { entries } = SnapshotBuilder.build( { endpoint: TEST_ENDPOINT, agentCard: AGENT_CARD_WITH_DUAL_EXTENSIONS, categories: FULL_CATEGORIES } )
+
+            expect( entries['ap2Version'] ).toBe( '0.1' )
+            expect( entries['x402Version'] ).toBe( '0.1' )
         } )
     } )
 } )
