@@ -2,7 +2,7 @@
 
 # a2a-agent-validator
 
-Validates A2A Protocol Agent Cards end-to-end. Fetches the well-known endpoint, validates card structure against the A2A spec, classifies capabilities, and returns a structured snapshot with 12 boolean categories and 13 entry fields. Compatible with `erc8004-registry-parser` as a validation plugin.
+Validates A2A Protocol Agent Cards end-to-end. Fetches the well-known endpoint, validates card structure against the A2A spec, classifies capabilities including [Google AP2 (Agent Payments Protocol)](https://github.com/google-agentic-commerce/AP2) and x402 extensions, and returns a structured snapshot with 16 boolean categories and 17 entry fields. Compatible with `erc8004-registry-parser` as a validation plugin.
 
 ## Quickstart
 
@@ -25,8 +25,12 @@ const { status, messages, categories, entries } = await A2aAgentValidator.start(
 
 - Fetches Agent Card from `/.well-known/agent-card.json` (A2A spec standard)
 - Validates card structure: required fields, interfaces, skills, provider
-- Classifies 12 boolean categories (reachable, skills, streaming, JSONRPC, GRPC, security)
-- Extracts 13 entry fields (name, version, skills, protocols, provider)
+- Classifies 16 boolean categories (reachable, skills, streaming, JSONRPC, GRPC, security, AP2, x402, embedded flow, ERC-8004)
+- Detects **AP2 (Agent Payments Protocol)** via `capabilities.extensions` array and `X-A2A-Extensions` HTTP header — extracts version and roles
+- Detects **x402** payment extensions and version
+- Detects **Embedded Flow** (AP2 + x402 combined)
+- Detects **ERC-8004** service links in agent card
+- Extracts 17 entry fields (name, version, skills, protocols, provider, AP2 version/roles, x402 version, extensions)
 - Compares two snapshots and produces a structured diff
 - Returns empty snapshot with all-false categories on connection failure
 - Compatible with `erc8004-registry-parser` via `.validate()` method
@@ -38,9 +42,9 @@ The validation pipeline processes an A2A Agent Card in four sequential steps:
 ```mermaid
 flowchart LR
     A[endpoint] --> B[A2aConnector.fetch]
-    B --> C[CardStructureValidator.validate]
+    B -->|agent card + X-A2A-Extensions header| C[CardStructureValidator.validate]
     C --> D[CapabilityClassifier.classify]
-    D --> E[SnapshotBuilder.build]
+    D -->|AP2 / x402 / ERC-8004 detection| E[SnapshotBuilder.build]
 ```
 
 ## Methods
@@ -99,8 +103,8 @@ Full validation with categories and entries.
 |-----|------|-------------|
 | status | boolean | `true` if no validation errors |
 | messages | string[] | Validation error messages |
-| categories | object | 12 boolean capability flags |
-| entries | object | 13 extracted data fields |
+| categories | object | 16 boolean capability flags |
+| entries | object | 17 extracted data fields |
 
 ---
 
@@ -132,7 +136,7 @@ Compares two snapshots and returns a structured diff.
 | hasChanges | boolean | `true` if any diff detected |
 | diff | object | Structured diff with sections: identity, capabilities, skills, interfaces, security, categories |
 
-## Categories (12 boolean flags)
+## Categories (16 boolean flags)
 
 | Flag | Description |
 |------|-------------|
@@ -148,8 +152,12 @@ Compares two snapshots and returns a structured diff.
 | `supportsGrpc` | Interface with `protocol_binding: 'GRPC'` |
 | `supportsExtendedCard` | `capabilities.extended_agent_card === true` |
 | `hasDocumentation` | `documentation_url` present |
+| `supportsAp2` | AP2 extension detected in `capabilities.extensions` or `X-A2A-Extensions` header |
+| `supportsX402` | x402 extension detected in `capabilities.extensions` or `X-A2A-Extensions` header |
+| `supportsEmbeddedFlow` | Both AP2 and x402 detected (agent supports embedded payment flow) |
+| `hasErc8004ServiceLink` | ERC-8004 service link found in agent card |
 
-## Entries (13 data fields)
+## Entries (17 data fields)
 
 | Entry | Type | Description |
 |-------|------|-------------|
@@ -165,6 +173,10 @@ Compares two snapshots and returns a structured diff.
 | `protocolVersion` | string | First interface protocol version |
 | `defaultInputModes` | array | Default input modes |
 | `defaultOutputModes` | array | Default output modes |
+| `ap2Version` | string/null | AP2 version extracted from extension URI (e.g. `"1.0"`) |
+| `ap2Roles` | array/null | AP2 roles from `extension.params.roles` (e.g. `["buyer", "seller"]`) |
+| `x402Version` | string/null | x402 version extracted from extension URI |
+| `extensions` | string/null | Raw `X-A2A-Extensions` header value |
 | `timestamp` | string | ISO 8601 timestamp |
 
 ## Validation Codes
