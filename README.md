@@ -1,4 +1,4 @@
-![Test](https://img.shields.io/github/actions/workflow/status/FlowMCP/a2a-agent-validator/test-on-push.yml) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+![Test](https://img.shields.io/github/actions/workflow/status/agentprobe/a2a-agent-validator/test-on-push.yml) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
 # a2a-agent-validator
 
@@ -7,7 +7,7 @@ Validates A2A Protocol Agent Cards end-to-end. Fetches the well-known endpoint, 
 ## Quickstart
 
 ```bash
-git clone https://github.com/FlowMCP/a2a-agent-validator.git
+git clone https://github.com/agentprobe/a2a-agent-validator.git
 cd a2a-agent-validator
 npm i
 ```
