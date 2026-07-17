@@ -43,10 +43,10 @@ describe( 'A2aConnector', () => {
                 text: async () => JSON.stringify( VALID_AGENT_CARD )
             } )
 
-            const { status, messages, agentCard } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
+            const { status, findings, agentCard } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
 
             expect( status ).toBe( true )
-            expect( messages ).toHaveLength( 0 )
+            expect( findings ).toHaveLength( 0 )
             expect( agentCard['name'] ).toBe( 'Recipe Agent' )
         } )
 
@@ -83,7 +83,7 @@ describe( 'A2aConnector', () => {
         } )
 
 
-        test( 'returns CON-011 on HTTP 404', async () => {
+        test( 'returns CON-111 on HTTP 404', async () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: false,
                 status: 404,
@@ -91,15 +91,15 @@ describe( 'A2aConnector', () => {
                 text: async () => 'Not Found'
             } )
 
-            const { status, messages, agentCard } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
+            const { status, findings, agentCard } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CON-011: Agent Card not found (HTTP 404)' )
+            expect( findings ).toContainEqual( { code: 'CON-111', severity: 'info', location: null, message: 'Agent Card not found (HTTP 404)' } )
             expect( agentCard ).toBeNull()
         } )
 
 
-        test( 'returns CON-012 on other HTTP errors', async () => {
+        test( 'returns CON-112 on other HTTP errors', async () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: false,
                 status: 500,
@@ -107,14 +107,14 @@ describe( 'A2aConnector', () => {
                 text: async () => 'Internal Server Error'
             } )
 
-            const { status, messages } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
+            const { status, findings } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CON-012: HTTP error (500)' )
+            expect( findings ).toContainEqual( { code: 'CON-112', severity: 'info', location: null, message: 'HTTP error (500)' } )
         } )
 
 
-        test( 'returns CON-013 when response is not valid JSON', async () => {
+        test( 'returns CON-113 when response is not valid JSON', async () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
@@ -122,15 +122,15 @@ describe( 'A2aConnector', () => {
                 text: async () => '<html>Not JSON</html>'
             } )
 
-            const { status, messages, agentCard } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
+            const { status, findings, agentCard } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CON-013: Response is not valid JSON' )
+            expect( findings ).toContainEqual( { code: 'CON-113', severity: 'info', location: null, message: 'Response is not valid JSON' } )
             expect( agentCard ).toBeNull()
         } )
 
 
-        test( 'returns CON-014 on timeout', async () => {
+        test( 'returns CON-114 on timeout', async () => {
             globalThis.fetch = jest.fn().mockImplementation( () => {
                 const error = new Error( 'The operation was aborted' )
                 error.name = 'AbortError'
@@ -138,20 +138,20 @@ describe( 'A2aConnector', () => {
                 throw error
             } )
 
-            const { status, messages } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
+            const { status, findings } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CON-014: Request timeout exceeded' )
+            expect( findings ).toContainEqual( { code: 'CON-114', severity: 'info', location: null, message: 'Request timeout exceeded' } )
         } )
 
 
-        test( 'returns CON-010 on network error', async () => {
+        test( 'returns CON-110 on network error', async () => {
             globalThis.fetch = jest.fn().mockRejectedValue( new Error( 'fetch failed' ) )
 
-            const { status, messages } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
+            const { status, findings } = await A2aConnector.fetch( { endpoint: TEST_ENDPOINT, timeout: TIMEOUT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CON-010: Server not reachable' )
+            expect( findings ).toContainEqual( { code: 'CON-110', severity: 'info', location: null, message: 'Server not reachable' } )
         } )
 
 

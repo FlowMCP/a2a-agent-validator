@@ -33,32 +33,32 @@ describe( 'A2aAgentValidator.start', () => {
     describe( 'parameter validation', () => {
 
         test( 'throws when endpoint is missing', async () => {
-            await expect( A2aAgentValidator.start( {} ) ).rejects.toThrow( /VAL-001/ )
+            await expect( A2aAgentValidator.start( {} ) ).rejects.toThrow( /VAL-101/ )
         } )
 
 
         test( 'throws when endpoint is not a string', async () => {
-            await expect( A2aAgentValidator.start( { endpoint: 42 } ) ).rejects.toThrow( /VAL-002/ )
+            await expect( A2aAgentValidator.start( { endpoint: 42 } ) ).rejects.toThrow( /VAL-102/ )
         } )
 
 
         test( 'throws when endpoint is empty', async () => {
-            await expect( A2aAgentValidator.start( { endpoint: '' } ) ).rejects.toThrow( /VAL-003/ )
+            await expect( A2aAgentValidator.start( { endpoint: '' } ) ).rejects.toThrow( /VAL-103/ )
         } )
 
 
         test( 'throws when endpoint is not a valid URL', async () => {
-            await expect( A2aAgentValidator.start( { endpoint: 'invalid' } ) ).rejects.toThrow( /VAL-004/ )
+            await expect( A2aAgentValidator.start( { endpoint: 'invalid' } ) ).rejects.toThrow( /VAL-104/ )
         } )
 
 
         test( 'throws when timeout is not a number', async () => {
-            await expect( A2aAgentValidator.start( { endpoint: TEST_ENDPOINT, timeout: 'fast' } ) ).rejects.toThrow( /VAL-005/ )
+            await expect( A2aAgentValidator.start( { endpoint: TEST_ENDPOINT, timeout: 'fast' } ) ).rejects.toThrow( /VAL-105/ )
         } )
 
 
         test( 'throws when timeout is zero', async () => {
-            await expect( A2aAgentValidator.start( { endpoint: TEST_ENDPOINT, timeout: 0 } ) ).rejects.toThrow( /VAL-006/ )
+            await expect( A2aAgentValidator.start( { endpoint: TEST_ENDPOINT, timeout: 0 } ) ).rejects.toThrow( /VAL-106/ )
         } )
     } )
 
@@ -68,10 +68,10 @@ describe( 'A2aAgentValidator.start', () => {
         test( 'returns empty snapshot when server not reachable', async () => {
             globalThis.fetch = jest.fn().mockRejectedValue( new Error( 'fetch failed' ) )
 
-            const { status, messages, categories, entries } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
+            const { status, findings, categories, entries } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CON-010: Server not reachable' )
+            expect( findings ).toContainEqual( { code: 'CON-110', severity: 'info', location: null, message: 'Server not reachable' } )
             expect( categories ).toEqual( EMPTY_CATEGORIES )
             expect( entries['url'] ).toBe( TEST_ENDPOINT )
             expect( entries['agentName'] ).toBeNull()
@@ -198,10 +198,10 @@ describe( 'A2aAgentValidator.start', () => {
                 text: async () => JSON.stringify( VALID_AGENT_CARD )
             } )
 
-            const { status, messages } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
+            const { status, findings } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
 
             expect( status ).toBe( true )
-            expect( messages ).toHaveLength( 0 )
+            expect( findings ).toHaveLength( 0 )
         } )
 
 
@@ -215,10 +215,10 @@ describe( 'A2aAgentValidator.start', () => {
                 text: async () => JSON.stringify( invalidCard )
             } )
 
-            const { status, messages, categories, entries } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
+            const { status, findings, categories, entries } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-020: Missing required field "name"' )
+            expect( findings ).toContainEqual( { code: 'CSV-020', severity: 'warning', location: 'name', message: 'Missing required field "name"' } )
             expect( categories['isReachable'] ).toBe( true )
             expect( categories['hasAgentCard'] ).toBe( true )
             expect( entries['url'] ).toBe( TEST_ENDPOINT )
@@ -235,10 +235,10 @@ describe( 'A2aAgentValidator.start', () => {
                 text: async () => JSON.stringify( cardWithout )
             } )
 
-            const { status, messages, categories, entries } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
+            const { status, findings, categories, entries } = await A2aAgentValidator.start( { endpoint: TEST_ENDPOINT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-023: Missing required field "supported_interfaces"' )
+            expect( findings ).toContainEqual( { code: 'CSV-023', severity: 'warning', location: 'supported_interfaces', message: 'Missing required field "supported_interfaces"' } )
             expect( categories['isReachable'] ).toBe( true )
             expect( categories['hasAgentCard'] ).toBe( true )
             expect( categories['hasValidStructure'] ).toBe( false )

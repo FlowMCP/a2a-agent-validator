@@ -22,49 +22,49 @@ describe( 'A2aAgentValidator.validate', () => {
     describe( 'parameter validation', () => {
 
         test( 'throws when endpoint is missing', async () => {
-            await expect( A2aAgentValidator.validate( {} ) ).rejects.toThrow( /VAL-001/ )
+            await expect( A2aAgentValidator.validate( {} ) ).rejects.toThrow( /VAL-101/ )
         } )
 
 
         test( 'throws when endpoint is not a string', async () => {
-            await expect( A2aAgentValidator.validate( { endpoint: 42 } ) ).rejects.toThrow( /VAL-002/ )
+            await expect( A2aAgentValidator.validate( { endpoint: 42 } ) ).rejects.toThrow( /VAL-102/ )
         } )
 
 
         test( 'throws when endpoint is empty', async () => {
-            await expect( A2aAgentValidator.validate( { endpoint: '' } ) ).rejects.toThrow( /VAL-003/ )
+            await expect( A2aAgentValidator.validate( { endpoint: '' } ) ).rejects.toThrow( /VAL-103/ )
         } )
 
 
         test( 'throws when endpoint is not a valid URL', async () => {
-            await expect( A2aAgentValidator.validate( { endpoint: 'invalid' } ) ).rejects.toThrow( /VAL-004/ )
+            await expect( A2aAgentValidator.validate( { endpoint: 'invalid' } ) ).rejects.toThrow( /VAL-104/ )
         } )
     } )
 
 
     describe( 'unreachable server', () => {
 
-        test( 'returns status false with CON-010 when server not reachable', async () => {
+        test( 'returns status false with CON-110 when server not reachable', async () => {
             globalThis.fetch = jest.fn().mockRejectedValue( new Error( 'fetch failed' ) )
 
-            const { status, messages } = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
+            const { status, findings } = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CON-010: Server not reachable' )
+            expect( findings ).toContainEqual( { code: 'CON-110', severity: 'info', location: null, message: 'Server not reachable' } )
         } )
 
 
-        test( 'returns status false with CON-011 when agent card not found', async () => {
+        test( 'returns status false with CON-111 when agent card not found', async () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: false,
                 status: 404,
                 text: async () => 'Not Found'
             } )
 
-            const { status, messages } = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
+            const { status, findings } = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CON-011: Agent Card not found (HTTP 404)' )
+            expect( findings ).toContainEqual( { code: 'CON-111', severity: 'info', location: null, message: 'Agent Card not found (HTTP 404)' } )
         } )
     } )
 
@@ -78,10 +78,10 @@ describe( 'A2aAgentValidator.validate', () => {
                 text: async () => JSON.stringify( VALID_AGENT_CARD )
             } )
 
-            const { status, messages } = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
+            const { status, findings } = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
 
             expect( status ).toBe( true )
-            expect( messages ).toHaveLength( 0 )
+            expect( findings ).toHaveLength( 0 )
         } )
 
 
@@ -92,10 +92,10 @@ describe( 'A2aAgentValidator.validate', () => {
                 text: async () => JSON.stringify( MINIMAL_AGENT_CARD )
             } )
 
-            const { status, messages } = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
+            const { status, findings } = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
 
             expect( status ).toBe( true )
-            expect( messages ).toHaveLength( 0 )
+            expect( findings ).toHaveLength( 0 )
         } )
 
 
@@ -108,14 +108,14 @@ describe( 'A2aAgentValidator.validate', () => {
                 text: async () => JSON.stringify( invalidCard )
             } )
 
-            const { status, messages } = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
+            const { status, findings } = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-020: Missing required field "name"' )
+            expect( findings ).toContainEqual( { code: 'CSV-020', severity: 'warning', location: 'name', message: 'Missing required field "name"' } )
         } )
 
 
-        test( 'returns only status and messages (no categories or entries)', async () => {
+        test( 'returns only status and findings (no categories or entries)', async () => {
             globalThis.fetch = jest.fn().mockResolvedValue( {
                 ok: true,
                 status: 200,
@@ -125,7 +125,7 @@ describe( 'A2aAgentValidator.validate', () => {
             const result = await A2aAgentValidator.validate( { endpoint: TEST_ENDPOINT } )
             const keys = Object.keys( result )
 
-            expect( keys ).toEqual( [ 'status', 'messages' ] )
+            expect( keys ).toEqual( [ 'status', 'findings' ] )
         } )
     } )
 } )

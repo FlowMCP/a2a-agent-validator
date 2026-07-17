@@ -7,18 +7,18 @@ describe( 'CardStructureValidator', () => {
     describe( 'validate — valid cards', () => {
 
         test( 'returns status true for valid full agent card', () => {
-            const { status, messages } = CardStructureValidator.validate( { agentCard: VALID_AGENT_CARD } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: VALID_AGENT_CARD } )
 
             expect( status ).toBe( true )
-            expect( messages ).toHaveLength( 0 )
+            expect( findings ).toHaveLength( 0 )
         } )
 
 
         test( 'returns status true for minimal agent card', () => {
-            const { status, messages } = CardStructureValidator.validate( { agentCard: MINIMAL_AGENT_CARD } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: MINIMAL_AGENT_CARD } )
 
             expect( status ).toBe( true )
-            expect( messages ).toHaveLength( 0 )
+            expect( findings ).toHaveLength( 0 )
         } )
     } )
 
@@ -27,82 +27,82 @@ describe( 'CardStructureValidator', () => {
 
         test( 'returns CSV-020 when name is missing', () => {
             const { name, ...card } = VALID_AGENT_CARD
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-020: Missing required field "name"' )
+            expect( findings ).toContainEqual( { code: 'CSV-020', severity: 'warning', location: 'name', message: 'Missing required field "name"' } )
         } )
 
 
         test( 'returns CSV-021 when description is missing', () => {
             const { description, ...card } = VALID_AGENT_CARD
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-021: Missing required field "description"' )
+            expect( findings ).toContainEqual( { code: 'CSV-021', severity: 'warning', location: 'description', message: 'Missing required field "description"' } )
         } )
 
 
         test( 'returns CSV-022 when version is missing', () => {
             const { version, ...card } = VALID_AGENT_CARD
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-022: Missing required field "version"' )
+            expect( findings ).toContainEqual( { code: 'CSV-022', severity: 'warning', location: 'version', message: 'Missing required field "version"' } )
         } )
 
 
         test( 'returns CSV-023 when supported_interfaces is missing', () => {
             const { supported_interfaces, ...card } = VALID_AGENT_CARD
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-023: Missing required field "supported_interfaces"' )
+            expect( findings ).toContainEqual( { code: 'CSV-023', severity: 'warning', location: 'supported_interfaces', message: 'Missing required field "supported_interfaces"' } )
         } )
 
 
         test( 'returns CSV-025 when capabilities is missing', () => {
             const { capabilities, ...card } = VALID_AGENT_CARD
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-025: Missing required field "capabilities"' )
+            expect( findings ).toContainEqual( { code: 'CSV-025', severity: 'warning', location: 'capabilities', message: 'Missing required field "capabilities"' } )
         } )
 
 
         test( 'returns CSV-026 when default_input_modes is missing', () => {
             const { default_input_modes, ...card } = VALID_AGENT_CARD
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-026: Missing required field "default_input_modes"' )
+            expect( findings ).toContainEqual( { code: 'CSV-026', severity: 'warning', location: 'default_input_modes', message: 'Missing required field "default_input_modes"' } )
         } )
 
 
         test( 'returns CSV-027 when default_output_modes is missing', () => {
             const { default_output_modes, ...card } = VALID_AGENT_CARD
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-027: Missing required field "default_output_modes"' )
+            expect( findings ).toContainEqual( { code: 'CSV-027', severity: 'warning', location: 'default_output_modes', message: 'Missing required field "default_output_modes"' } )
         } )
 
 
         test( 'returns CSV-028 when skills is missing', () => {
             const { skills, ...card } = VALID_AGENT_CARD
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-028: Missing required field "skills"' )
+            expect( findings ).toContainEqual( { code: 'CSV-028', severity: 'warning', location: 'skills', message: 'Missing required field "skills"' } )
         } )
 
 
         test( 'collects multiple missing fields', () => {
             const { name, description, version, ...card } = VALID_AGENT_CARD
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toHaveLength( 3 )
+            expect( findings ).toHaveLength( 3 )
         } )
     } )
 
@@ -111,10 +111,10 @@ describe( 'CardStructureValidator', () => {
 
         test( 'returns CSV-024 when supported_interfaces is empty', () => {
             const card = { ...VALID_AGENT_CARD, supported_interfaces: [] }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-024: supported_interfaces must not be empty' )
+            expect( findings ).toContainEqual( { code: 'CSV-024', severity: 'warning', location: 'supported_interfaces', message: 'Must not be empty' } )
         } )
 
 
@@ -123,10 +123,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 supported_interfaces: [ { protocol_binding: 'JSONRPC', protocol_version: '0.3' } ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-030: supported_interfaces[0].url: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-030', severity: 'warning', location: 'supported_interfaces[0].url', message: 'Missing value' } )
         } )
 
 
@@ -135,10 +135,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 supported_interfaces: [ { url: 'http://agent.example.com/a2a', protocol_binding: 'JSONRPC', protocol_version: '0.3' } ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-031: supported_interfaces[0].url: Must be a valid HTTPS URL' )
+            expect( findings ).toContainEqual( { code: 'CSV-031', severity: 'warning', location: 'supported_interfaces[0].url', message: 'Must be a valid HTTPS URL' } )
         } )
 
 
@@ -147,10 +147,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 supported_interfaces: [ { url: 'not-a-url', protocol_binding: 'JSONRPC', protocol_version: '0.3' } ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-031: supported_interfaces[0].url: Must be a valid HTTPS URL' )
+            expect( findings ).toContainEqual( { code: 'CSV-031', severity: 'warning', location: 'supported_interfaces[0].url', message: 'Must be a valid HTTPS URL' } )
         } )
 
 
@@ -159,10 +159,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 supported_interfaces: [ { url: 'https://agent.example.com/a2a', protocol_version: '0.3' } ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-032: supported_interfaces[0].protocol_binding: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-032', severity: 'warning', location: 'supported_interfaces[0].protocol_binding', message: 'Missing value' } )
         } )
 
 
@@ -171,10 +171,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 supported_interfaces: [ { url: 'https://agent.example.com/a2a', protocol_binding: 'JSONRPC' } ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-033: supported_interfaces[0].protocol_version: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-033', severity: 'warning', location: 'supported_interfaces[0].protocol_version', message: 'Missing value' } )
         } )
 
 
@@ -186,10 +186,10 @@ describe( 'CardStructureValidator', () => {
                     { protocol_binding: 'GRPC', protocol_version: '0.3' }
                 ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-030: supported_interfaces[1].url: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-030', severity: 'warning', location: 'supported_interfaces[1].url', message: 'Missing value' } )
         } )
     } )
 
@@ -201,10 +201,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 skills: [ { name: 'Test', description: 'Test skill', tags: [ 'test' ] } ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-034: skills[0].id: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-034', severity: 'warning', location: 'skills[0].id', message: 'Missing value' } )
         } )
 
 
@@ -213,10 +213,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 skills: [ { id: 'test', description: 'Test skill', tags: [ 'test' ] } ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-035: skills[0].name: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-035', severity: 'warning', location: 'skills[0].name', message: 'Missing value' } )
         } )
 
 
@@ -225,10 +225,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 skills: [ { id: 'test', name: 'Test', tags: [ 'test' ] } ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-036: skills[0].description: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-036', severity: 'warning', location: 'skills[0].description', message: 'Missing value' } )
         } )
 
 
@@ -237,10 +237,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 skills: [ { id: 'test', name: 'Test', description: 'Test skill' } ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-037: skills[0].tags: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-037', severity: 'warning', location: 'skills[0].tags', message: 'Missing value' } )
         } )
 
 
@@ -249,10 +249,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 skills: [ { id: 'test', name: 'Test', description: 'Test skill', tags: [] } ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-038: skills[0].tags: Must be a non-empty array' )
+            expect( findings ).toContainEqual( { code: 'CSV-038', severity: 'warning', location: 'skills[0].tags', message: 'Must be a non-empty array' } )
         } )
 
 
@@ -264,10 +264,10 @@ describe( 'CardStructureValidator', () => {
                     { id: 'second', description: 'Missing name', tags: [ 'ok' ] }
                 ]
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-035: skills[1].name: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-035', severity: 'warning', location: 'skills[1].name', message: 'Missing value' } )
         } )
     } )
 
@@ -279,10 +279,10 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 provider: { organization: 'Example Corp' }
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-040: provider.url: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-040', severity: 'warning', location: 'provider.url', message: 'Missing value' } )
         } )
 
 
@@ -291,18 +291,18 @@ describe( 'CardStructureValidator', () => {
                 ...VALID_AGENT_CARD,
                 provider: { url: 'https://example.com' }
             }
-            const { status, messages } = CardStructureValidator.validate( { agentCard: card } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: card } )
 
             expect( status ).toBe( false )
-            expect( messages ).toContain( 'CSV-041: provider.organization: Missing value' )
+            expect( findings ).toContainEqual( { code: 'CSV-041', severity: 'warning', location: 'provider.organization', message: 'Missing value' } )
         } )
 
 
         test( 'skips provider validation when provider is not present', () => {
-            const { status, messages } = CardStructureValidator.validate( { agentCard: MINIMAL_AGENT_CARD } )
+            const { status, findings } = CardStructureValidator.validate( { agentCard: MINIMAL_AGENT_CARD } )
 
             expect( status ).toBe( true )
-            expect( messages ).toHaveLength( 0 )
+            expect( findings ).toHaveLength( 0 )
         } )
     } )
 } )

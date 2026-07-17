@@ -15,7 +15,7 @@ npm i
 ```javascript
 import { A2aAgentValidator } from 'a2a-agent-validator'
 
-const { status, messages, categories, entries } = await A2aAgentValidator.start( {
+const { status, findings, categories, entries } = await A2aAgentValidator.start( {
     endpoint: 'https://agent.example.com',
     timeout: 15000
 } )
@@ -53,7 +53,7 @@ All methods are static and use object parameters with object returns.
 
 ### `.validate( { endpoint } )`
 
-Simple validation compatible with `erc8004-registry-parser`. Returns only status and messages.
+Simple validation compatible with `erc8004-registry-parser`. Returns only status and findings.
 
 **Method**
 
@@ -68,13 +68,13 @@ Simple validation compatible with `erc8004-registry-parser`. Returns only status
 **Returns**
 
 ```javascript
-{ status: true, messages: [] }
+{ status: true, findings: [] }
 ```
 
 | Key | Type | Description |
 |-----|------|-------------|
 | status | boolean | `true` if card is valid |
-| messages | string[] | Validation error messages |
+| findings | object[] | Finding objects `{ code, severity, location, message }` |
 
 ---
 
@@ -96,13 +96,13 @@ Full validation with categories and entries.
 **Returns**
 
 ```javascript
-{ status: true, messages: [], categories: { ... }, entries: { ... } }
+{ status: true, findings: [], categories: { ... }, entries: { ... } }
 ```
 
 | Key | Type | Description |
 |-----|------|-------------|
 | status | boolean | `true` if no validation errors |
-| messages | string[] | Validation error messages |
+| findings | object[] | Finding objects `{ code, severity, location, message }` |
 | categories | object | 16 boolean capability flags |
 | entries | object | 17 extracted data fields |
 
@@ -181,61 +181,69 @@ Compares two snapshots and returns a structured diff.
 
 ## Validation Codes
 
-### VAL — Input Validation
+Findings are emitted as structured objects `{ code, severity, location, message }` conforming to
+the AgentProbe finding-object spec. `severity` is lowercase (`error` / `warning` / `info`). The
+`VAL-1xx` and `CON-1xx` bands are the a2a-owned bands (hundreds digit `1`); `CSV-*` codes are
+already globally unique and keep their numbers.
 
-| Code | Severity | Description |
-|------|----------|-------------|
-| VAL-001 | WARNING | endpoint: Missing value |
-| VAL-002 | WARNING | endpoint: Must be a string |
-| VAL-003 | WARNING | endpoint: Must not be empty |
-| VAL-004 | WARNING | endpoint: Must be a valid URL |
-| VAL-005 | WARNING | timeout: Must be a number |
-| VAL-006 | WARNING | timeout: Must be greater than 0 |
-| VAL-007 | WARNING | before/after: Missing value, must be an object, or missing categories/entries |
-| VAL-008 | WARNING | before/after: Missing value, must be an object, or missing categories/entries |
+### VAL — Input Validation (band `VAL-1xx`)
 
-### CON — A2A Connection
+| Code | Severity | Location | Message |
+|------|----------|----------|---------|
+| VAL-101 | error | endpoint | Missing value |
+| VAL-102 | error | endpoint | Must be a string |
+| VAL-103 | error | endpoint | Must not be empty |
+| VAL-104 | error | endpoint | Must be a valid URL |
+| VAL-105 | error | timeout | Must be a number |
+| VAL-106 | error | timeout | Must be greater than 0 |
+| VAL-107 | error | before | Missing value / Must be an object / Missing categories or entries |
+| VAL-108 | error | after | Missing value / Must be an object / Missing categories or entries |
 
-| Code | Severity | Description |
-|------|----------|-------------|
-| CON-010 | INFO | Server not reachable |
-| CON-011 | INFO | Agent Card not found (HTTP 404) |
-| CON-012 | INFO | HTTP error |
-| CON-013 | INFO | Response is not valid JSON |
-| CON-014 | INFO | Request timeout exceeded |
+### CON — A2A Connection (band `CON-1xx`)
+
+| Code | Severity | Location | Message |
+|------|----------|----------|---------|
+| CON-110 | info | null | Server not reachable |
+| CON-111 | info | null | Agent Card not found (HTTP 404) |
+| CON-112 | info | null | HTTP error |
+| CON-113 | info | null | Response is not valid JSON |
+| CON-114 | info | null | Request timeout exceeded |
 
 ### CSV — Card Structure Validation
 
-| Code | Severity | Description |
-|------|----------|-------------|
-| CSV-020 | WARNING | Missing required field "name" |
-| CSV-021 | WARNING | Missing required field "description" |
-| CSV-022 | WARNING | Missing required field "version" |
-| CSV-023 | WARNING | Missing required field "supported_interfaces" |
-| CSV-024 | WARNING | supported_interfaces must not be empty |
-| CSV-025 | WARNING | Missing required field "capabilities" |
-| CSV-026 | WARNING | Missing required field "default_input_modes" |
-| CSV-027 | WARNING | Missing required field "default_output_modes" |
-| CSV-028 | WARNING | Missing required field "skills" |
-| CSV-030 | WARNING | supported_interfaces: url missing value |
-| CSV-031 | WARNING | supported_interfaces: url must be a valid HTTPS URL |
-| CSV-032 | WARNING | supported_interfaces: protocol_binding missing |
-| CSV-033 | WARNING | supported_interfaces: protocol_version missing |
-| CSV-034 | WARNING | skills: id missing value |
-| CSV-035 | WARNING | skills: name missing value |
-| CSV-036 | WARNING | skills: description missing value |
-| CSV-037 | WARNING | skills: tags missing value |
-| CSV-038 | WARNING | skills: tags must be a non-empty array |
-| CSV-040 | WARNING | provider.url: Missing value |
-| CSV-041 | WARNING | provider.organization: Missing value |
+| Code | Severity | Location | Message |
+|------|----------|----------|---------|
+| CSV-020 | warning | name | Missing required field "name" |
+| CSV-021 | warning | description | Missing required field "description" |
+| CSV-022 | warning | version | Missing required field "version" |
+| CSV-023 | warning | supported_interfaces | Missing required field "supported_interfaces" |
+| CSV-024 | warning | supported_interfaces | Must not be empty |
+| CSV-025 | warning | capabilities | Missing required field "capabilities" |
+| CSV-026 | warning | default_input_modes | Missing required field "default_input_modes" |
+| CSV-027 | warning | default_output_modes | Missing required field "default_output_modes" |
+| CSV-028 | warning | skills | Missing required field "skills" |
+| CSV-030 | warning | supported_interfaces[i].url | Missing value |
+| CSV-031 | warning | supported_interfaces[i].url | Must be a valid HTTPS URL |
+| CSV-032 | warning | supported_interfaces[i].protocol_binding | Missing value |
+| CSV-033 | warning | supported_interfaces[i].protocol_version | Missing value |
+| CSV-034 | warning | skills[i].id | Missing value |
+| CSV-035 | warning | skills[i].name | Missing value |
+| CSV-036 | warning | skills[i].description | Missing value |
+| CSV-037 | warning | skills[i].tags | Missing value |
+| CSV-038 | warning | skills[i].tags | Must be a non-empty array |
+| CSV-040 | warning | provider.url | Missing value |
+| CSV-041 | warning | provider.organization | Missing value |
 
 ### CMP — Comparison
 
+`CMP-*` codes are emitted by `.compare()` and are migrated to the structured finding shape in a
+later phase; they are documented here for completeness.
+
 | Code | Severity | Description |
 |------|----------|-------------|
-| CMP-001 | WARNING | Snapshots are from different agents |
-| CMP-002 | WARNING | Before snapshot has no timestamp |
-| CMP-003 | WARNING | After snapshot is older than before |
+| CMP-001 | warning | Snapshots are from different agents |
+| CMP-002 | warning | Before snapshot has no timestamp |
+| CMP-003 | warning | After snapshot is older than before |
 
 ## License
 

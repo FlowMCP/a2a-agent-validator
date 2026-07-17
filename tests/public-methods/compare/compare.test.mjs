@@ -54,37 +54,37 @@ describe( 'A2aAgentValidator.compare', () => {
     describe( 'parameter validation', () => {
 
         test( 'throws when before is missing', () => {
-            expect( () => A2aAgentValidator.compare( { after: SNAPSHOT_B } ) ).toThrow( /VAL-007/ )
+            expect( () => A2aAgentValidator.compare( { after: SNAPSHOT_B } ) ).toThrow( /VAL-107/ )
         } )
 
 
         test( 'throws when after is missing', () => {
-            expect( () => A2aAgentValidator.compare( { before: SNAPSHOT_A } ) ).toThrow( /VAL-008/ )
+            expect( () => A2aAgentValidator.compare( { before: SNAPSHOT_A } ) ).toThrow( /VAL-108/ )
         } )
 
 
         test( 'throws when before is not an object', () => {
-            expect( () => A2aAgentValidator.compare( { before: 'invalid', after: SNAPSHOT_B } ) ).toThrow( /VAL-007/ )
+            expect( () => A2aAgentValidator.compare( { before: 'invalid', after: SNAPSHOT_B } ) ).toThrow( /VAL-107/ )
         } )
 
 
         test( 'throws when after is not an object', () => {
-            expect( () => A2aAgentValidator.compare( { before: SNAPSHOT_A, after: null } ) ).toThrow( /VAL-008/ )
+            expect( () => A2aAgentValidator.compare( { before: SNAPSHOT_A, after: null } ) ).toThrow( /VAL-108/ )
         } )
 
 
         test( 'throws when before is missing categories', () => {
-            expect( () => A2aAgentValidator.compare( { before: { entries: {} }, after: SNAPSHOT_B } ) ).toThrow( /VAL-007/ )
+            expect( () => A2aAgentValidator.compare( { before: { entries: {} }, after: SNAPSHOT_B } ) ).toThrow( /VAL-107/ )
         } )
 
 
         test( 'throws when after is missing entries', () => {
-            expect( () => A2aAgentValidator.compare( { before: SNAPSHOT_A, after: { categories: {} } } ) ).toThrow( /VAL-008/ )
+            expect( () => A2aAgentValidator.compare( { before: SNAPSHOT_A, after: { categories: {} } } ) ).toThrow( /VAL-108/ )
         } )
 
 
         test( 'throws when before is an array', () => {
-            expect( () => A2aAgentValidator.compare( { before: [], after: SNAPSHOT_B } ) ).toThrow( /VAL-007/ )
+            expect( () => A2aAgentValidator.compare( { before: [], after: SNAPSHOT_B } ) ).toThrow( /VAL-107/ )
         } )
     } )
 

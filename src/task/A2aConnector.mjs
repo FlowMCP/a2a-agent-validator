@@ -2,7 +2,7 @@ class A2aConnector {
 
 
     static async fetch( { endpoint, timeout } ) {
-        const struct = { status: false, messages: [], agentCard: null, extensions: null }
+        const struct = { status: false, findings: [], agentCard: null, extensions: null }
 
         const normalizedEndpoint = endpoint.replace( /\/+$/, '' )
         const url = `${normalizedEndpoint}/.well-known/agent-card.json`
@@ -25,13 +25,13 @@ class A2aConnector {
             struct['extensions'] = extensionsHeader || null
 
             if( response.status === 404 ) {
-                struct['messages'].push( 'CON-011: Agent Card not found (HTTP 404)' )
+                struct['findings'].push( { code: 'CON-111', severity: 'info', location: null, message: 'Agent Card not found (HTTP 404)' } )
 
                 return struct
             }
 
             if( !response.ok ) {
-                struct['messages'].push( `CON-012: HTTP error (${response.status})` )
+                struct['findings'].push( { code: 'CON-112', severity: 'info', location: null, message: `HTTP error (${response.status})` } )
 
                 return struct
             }
@@ -43,15 +43,15 @@ class A2aConnector {
                 struct['status'] = true
                 struct['agentCard'] = agentCard
             } catch( _e ) {
-                struct['messages'].push( 'CON-013: Response is not valid JSON' )
+                struct['findings'].push( { code: 'CON-113', severity: 'info', location: null, message: 'Response is not valid JSON' } )
             }
         } catch( err ) {
             clearTimeout( timeoutId )
 
             if( err.name === 'AbortError' ) {
-                struct['messages'].push( 'CON-014: Request timeout exceeded' )
+                struct['findings'].push( { code: 'CON-114', severity: 'info', location: null, message: 'Request timeout exceeded' } )
             } else {
-                struct['messages'].push( 'CON-010: Server not reachable' )
+                struct['findings'].push( { code: 'CON-110', severity: 'info', location: null, message: 'Server not reachable' } )
             }
         }
 

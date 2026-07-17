@@ -9,63 +9,63 @@ class A2aAgentValidator {
 
 
     static async validate( { endpoint } ) {
-        const { status: validationStatus, messages: validationMessages } = Validation.validationValidate( { endpoint } )
-        if( !validationStatus ) { Validation.error( { messages: validationMessages } ) }
+        const { status: validationStatus, findings: validationFindings } = Validation.validationValidate( { endpoint } )
+        if( !validationStatus ) { Validation.error( { findings: validationFindings } ) }
 
-        const { status: fetchStatus, messages: fetchMessages, agentCard } = await A2aConnector.fetch( { endpoint, timeout: 10000 } )
+        const { status: fetchStatus, findings: fetchFindings, agentCard } = await A2aConnector.fetch( { endpoint, timeout: 10000 } )
 
         if( !fetchStatus ) {
-            const messages = [ ...fetchMessages ]
+            const findings = [ ...fetchFindings ]
 
-            return { status: false, messages }
+            return { status: false, findings }
         }
 
-        const { messages: structureMessages } = CardStructureValidator.validate( { agentCard } )
+        const { findings: structureFindings } = CardStructureValidator.validate( { agentCard } )
 
-        const allMessages = [ ...fetchMessages, ...structureMessages ]
-        const status = allMessages.length === 0
+        const allFindings = [ ...fetchFindings, ...structureFindings ]
+        const status = allFindings.length === 0
 
-        return { status, messages: allMessages }
+        return { status, findings: allFindings }
     }
 
 
     static async start( { endpoint, timeout = 10000 } ) {
-        const { status: validationStatus, messages: validationMessages } = Validation.validationStart( { endpoint, timeout } )
-        if( !validationStatus ) { Validation.error( { messages: validationMessages } ) }
+        const { status: validationStatus, findings: validationFindings } = Validation.validationStart( { endpoint, timeout } )
+        if( !validationStatus ) { Validation.error( { findings: validationFindings } ) }
 
-        const { status: fetchStatus, messages: fetchMessages, agentCard, extensions } = await A2aConnector.fetch( { endpoint, timeout } )
+        const { status: fetchStatus, findings: fetchFindings, agentCard, extensions } = await A2aConnector.fetch( { endpoint, timeout } )
 
         if( !fetchStatus ) {
             const { categories, entries } = SnapshotBuilder.buildEmpty( { endpoint } )
-            const messages = [ ...fetchMessages ]
+            const findings = [ ...fetchFindings ]
 
-            return { status: false, messages, categories, entries }
+            return { status: false, findings, categories, entries }
         }
 
-        const { messages: structureMessages } = CardStructureValidator.validate( { agentCard } )
+        const { findings: structureFindings } = CardStructureValidator.validate( { agentCard } )
 
-        if( structureMessages.length > 0 ) {
+        if( structureFindings.length > 0 ) {
             const { categories, entries } = SnapshotBuilder.buildEmpty( { endpoint } )
             categories['isReachable'] = true
             categories['hasAgentCard'] = true
-            const allMessages = [ ...fetchMessages, ...structureMessages ]
+            const allFindings = [ ...fetchFindings, ...structureFindings ]
 
-            return { status: false, messages: allMessages, categories, entries }
+            return { status: false, findings: allFindings, categories, entries }
         }
 
         const { categories } = CapabilityClassifier.classify( { agentCard, extensions } )
         const { categories: snapshotCategories, entries } = SnapshotBuilder.build( { endpoint, agentCard, categories, extensions } )
 
-        const allMessages = [ ...fetchMessages, ...structureMessages ]
-        const status = allMessages.length === 0
+        const allFindings = [ ...fetchFindings, ...structureFindings ]
+        const status = allFindings.length === 0
 
-        return { status, messages: allMessages, categories: snapshotCategories, entries }
+        return { status, findings: allFindings, categories: snapshotCategories, entries }
     }
 
 
     static compare( { before, after } ) {
-        const { status: validationStatus, messages: validationMessages } = Validation.validationCompare( { before, after } )
-        if( !validationStatus ) { Validation.error( { messages: validationMessages } ) }
+        const { status: validationStatus, findings: validationFindings } = Validation.validationCompare( { before, after } )
+        if( !validationStatus ) { Validation.error( { findings: validationFindings } ) }
 
         const messages = []
 

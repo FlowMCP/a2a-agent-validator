@@ -10,14 +10,14 @@ console.log( '\n=== A2aAgentValidator.start ===' )
 console.log( `Endpoint: ${ENDPOINT}` )
 
 try {
-    const { status, messages, categories, entries } = await A2aAgentValidator.start( { endpoint: ENDPOINT, timeout: 15000 } )
+    const { status, findings, categories, entries } = await A2aAgentValidator.start( { endpoint: ENDPOINT, timeout: 15000 } )
 
     console.log( `\nStatus: ${status}` )
-    console.log( `Messages: ${messages.length}` )
+    console.log( `Findings: ${findings.length}` )
 
-    messages
-        .forEach( ( msg ) => {
-            console.log( `  - ${msg}` )
+    findings
+        .forEach( ( finding ) => {
+            console.log( `  - [${finding['severity']}] ${finding['code']} ${finding['location']}: ${finding['message']}` )
         } )
 
     console.log( '\nCategories:' )
@@ -40,14 +40,14 @@ try {
 console.log( '\n=== A2aAgentValidator.validate ===' )
 
 try {
-    const { status, messages } = await A2aAgentValidator.validate( { endpoint: ENDPOINT } )
+    const { status, findings } = await A2aAgentValidator.validate( { endpoint: ENDPOINT } )
 
     console.log( `Status: ${status}` )
-    console.log( `Messages: ${messages.length}` )
+    console.log( `Findings: ${findings.length}` )
 
-    messages
-        .forEach( ( msg ) => {
-            console.log( `  - ${msg}` )
+    findings
+        .forEach( ( finding ) => {
+            console.log( `  - [${finding['severity']}] ${finding['code']} ${finding['location']}: ${finding['message']}` )
         } )
 } catch( err ) {
     console.log( `Error: ${err.message}` )

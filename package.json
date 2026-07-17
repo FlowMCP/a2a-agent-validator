@@ -1,6 +1,6 @@
 {
     "name": "a2a-agent-validator",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Validates A2A Protocol Agent Cards: fetches well-known endpoint, validates card structure, classifies capabilities, and builds structured snapshots with comprehensive error reporting.",
     "main": "./src/index.mjs",
     "type": "module",

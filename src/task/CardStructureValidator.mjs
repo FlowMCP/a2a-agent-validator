@@ -2,7 +2,7 @@ class CardStructureValidator {
 
 
     static validate( { agentCard } ) {
-        const struct = { status: false, messages: [] }
+        const struct = { status: false, findings: [] }
 
         const requiredTopLevel = [
             [ 'name', 'CSV-020' ],
@@ -18,21 +18,21 @@ class CardStructureValidator {
         requiredTopLevel
             .forEach( ( [ field, code ] ) => {
                 if( agentCard[field] === undefined || agentCard[field] === null ) {
-                    struct['messages'].push( `${code}: Missing required field "${field}"` )
+                    struct['findings'].push( { code, severity: 'warning', location: field, message: `Missing required field "${field}"` } )
                 }
             } )
 
-        if( struct['messages'].length > 0 ) {
+        if( struct['findings'].length > 0 ) {
             return struct
         }
 
         const { supported_interfaces: supportedInterfaces, skills, provider } = agentCard
 
         if( !Array.isArray( supportedInterfaces ) || supportedInterfaces.length === 0 ) {
-            struct['messages'].push( 'CSV-024: supported_interfaces must not be empty' )
+            struct['findings'].push( { code: 'CSV-024', severity: 'warning', location: 'supported_interfaces', message: 'Must not be empty' } )
         }
 
-        if( struct['messages'].length > 0 ) {
+        if( struct['findings'].length > 0 ) {
             return struct
         }
 
@@ -43,7 +43,7 @@ class CardStructureValidator {
             CardStructureValidator.#validateProvider( { provider, struct } )
         }
 
-        if( struct['messages'].length > 0 ) {
+        if( struct['findings'].length > 0 ) {
             return struct
         }
 
@@ -57,26 +57,26 @@ class CardStructureValidator {
         supportedInterfaces
             .forEach( ( iface, index ) => {
                 if( iface['url'] === undefined || iface['url'] === null ) {
-                    struct['messages'].push( `CSV-030: supported_interfaces[${index}].url: Missing value` )
+                    struct['findings'].push( { code: 'CSV-030', severity: 'warning', location: `supported_interfaces[${index}].url`, message: 'Missing value' } )
                 } else {
                     try {
                         const parsed = new URL( iface['url'] )
                         const isLocal = parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1'
 
                         if( parsed.protocol !== 'https:' && !isLocal ) {
-                            struct['messages'].push( `CSV-031: supported_interfaces[${index}].url: Must be a valid HTTPS URL` )
+                            struct['findings'].push( { code: 'CSV-031', severity: 'warning', location: `supported_interfaces[${index}].url`, message: 'Must be a valid HTTPS URL' } )
                         }
                     } catch( _e ) {
-                        struct['messages'].push( `CSV-031: supported_interfaces[${index}].url: Must be a valid HTTPS URL` )
+                        struct['findings'].push( { code: 'CSV-031', severity: 'warning', location: `supported_interfaces[${index}].url`, message: 'Must be a valid HTTPS URL' } )
                     }
                 }
 
                 if( iface['protocol_binding'] === undefined || iface['protocol_binding'] === null ) {
-                    struct['messages'].push( `CSV-032: supported_interfaces[${index}].protocol_binding: Missing value` )
+                    struct['findings'].push( { code: 'CSV-032', severity: 'warning', location: `supported_interfaces[${index}].protocol_binding`, message: 'Missing value' } )
                 }
 
                 if( iface['protocol_version'] === undefined || iface['protocol_version'] === null ) {
-                    struct['messages'].push( `CSV-033: supported_interfaces[${index}].protocol_version: Missing value` )
+                    struct['findings'].push( { code: 'CSV-033', severity: 'warning', location: `supported_interfaces[${index}].protocol_version`, message: 'Missing value' } )
                 }
             } )
     }
@@ -86,21 +86,21 @@ class CardStructureValidator {
         skills
             .forEach( ( skill, index ) => {
                 if( skill['id'] === undefined || skill['id'] === null ) {
-                    struct['messages'].push( `CSV-034: skills[${index}].id: Missing value` )
+                    struct['findings'].push( { code: 'CSV-034', severity: 'warning', location: `skills[${index}].id`, message: 'Missing value' } )
                 }
 
                 if( skill['name'] === undefined || skill['name'] === null ) {
-                    struct['messages'].push( `CSV-035: skills[${index}].name: Missing value` )
+                    struct['findings'].push( { code: 'CSV-035', severity: 'warning', location: `skills[${index}].name`, message: 'Missing value' } )
                 }
 
                 if( skill['description'] === undefined || skill['description'] === null ) {
-                    struct['messages'].push( `CSV-036: skills[${index}].description: Missing value` )
+                    struct['findings'].push( { code: 'CSV-036', severity: 'warning', location: `skills[${index}].description`, message: 'Missing value' } )
                 }
 
                 if( skill['tags'] === undefined || skill['tags'] === null ) {
-                    struct['messages'].push( `CSV-037: skills[${index}].tags: Missing value` )
+                    struct['findings'].push( { code: 'CSV-037', severity: 'warning', location: `skills[${index}].tags`, message: 'Missing value' } )
                 } else if( !Array.isArray( skill['tags'] ) || skill['tags'].length === 0 ) {
-                    struct['messages'].push( `CSV-038: skills[${index}].tags: Must be a non-empty array` )
+                    struct['findings'].push( { code: 'CSV-038', severity: 'warning', location: `skills[${index}].tags`, message: 'Must be a non-empty array' } )
                 }
             } )
     }
@@ -108,11 +108,11 @@ class CardStructureValidator {
 
     static #validateProvider( { provider, struct } ) {
         if( provider['url'] === undefined || provider['url'] === null ) {
-            struct['messages'].push( 'CSV-040: provider.url: Missing value' )
+            struct['findings'].push( { code: 'CSV-040', severity: 'warning', location: 'provider.url', message: 'Missing value' } )
         }
 
         if( provider['organization'] === undefined || provider['organization'] === null ) {
-            struct['messages'].push( 'CSV-041: provider.organization: Missing value' )
+            struct['findings'].push( { code: 'CSV-041', severity: 'warning', location: 'provider.organization', message: 'Missing value' } )
         }
     }
 }
