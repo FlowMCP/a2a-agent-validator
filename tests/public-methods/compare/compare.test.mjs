@@ -92,10 +92,10 @@ describe( 'A2aAgentValidator.compare', () => {
     describe( 'identical snapshots', () => {
 
         test( 'reports no changes for identical snapshots', () => {
-            const { status, messages, hasChanges, diff } = A2aAgentValidator.compare( { before: SNAPSHOT_A, after: SNAPSHOT_B } )
+            const { status, findings, hasChanges, diff } = A2aAgentValidator.compare( { before: SNAPSHOT_A, after: SNAPSHOT_B } )
 
             expect( status ).toBe( true )
-            expect( messages ).toHaveLength( 0 )
+            expect( findings ).toHaveLength( 0 )
             expect( hasChanges ).toBe( false )
             expect( Object.keys( diff['identity']['changed'] ) ).toHaveLength( 0 )
         } )
@@ -419,9 +419,11 @@ describe( 'A2aAgentValidator.compare', () => {
                 entries: { ...SNAPSHOT_B['entries'], url: 'https://other-agent.example.com' }
             }
 
-            const { messages } = A2aAgentValidator.compare( { before: SNAPSHOT_A, after } )
+            const { findings } = A2aAgentValidator.compare( { before: SNAPSHOT_A, after } )
 
-            expect( messages ).toContain( 'CMP-001 compare: Snapshots are from different agents' )
+            expect( findings ).toContainEqual(
+                expect.objectContaining( { code: 'CMP-001', severity: 'warning', location: 'compare', message: 'Snapshots are from different agents' } )
+            )
         } )
 
 
@@ -431,9 +433,11 @@ describe( 'A2aAgentValidator.compare', () => {
                 entries: { ...SNAPSHOT_A['entries'], timestamp: null }
             }
 
-            const { messages } = A2aAgentValidator.compare( { before, after: SNAPSHOT_B } )
+            const { findings } = A2aAgentValidator.compare( { before, after: SNAPSHOT_B } )
 
-            expect( messages ).toContain( 'CMP-002 compare: Before snapshot has no timestamp' )
+            expect( findings ).toContainEqual(
+                expect.objectContaining( { code: 'CMP-002', severity: 'warning', location: 'compare', message: 'Before snapshot has no timestamp' } )
+            )
         } )
 
 
@@ -443,9 +447,11 @@ describe( 'A2aAgentValidator.compare', () => {
                 entries: { ...SNAPSHOT_B['entries'], timestamp: '2024-12-31T00:00:00.000Z' }
             }
 
-            const { messages } = A2aAgentValidator.compare( { before: SNAPSHOT_A, after } )
+            const { findings } = A2aAgentValidator.compare( { before: SNAPSHOT_A, after } )
 
-            expect( messages ).toContain( 'CMP-003 compare: After snapshot is older than before' )
+            expect( findings ).toContainEqual(
+                expect.objectContaining( { code: 'CMP-003', severity: 'warning', location: 'compare', message: 'After snapshot is older than before' } )
+            )
         } )
     } )
 } )

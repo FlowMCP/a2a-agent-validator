@@ -126,13 +126,13 @@ Compares two snapshots and returns a structured diff.
 **Returns**
 
 ```javascript
-{ status: true, messages: [], hasChanges: false, diff: { ... } }
+{ status: true, findings: [], hasChanges: false, diff: { ... } }
 ```
 
 | Key | Type | Description |
 |-----|------|-------------|
 | status | boolean | Always `true` after validation |
-| messages | string[] | Warning messages (different servers, timestamp order) |
+| findings | object[] | `CMP-*` integrity findings `{ code, severity, location, message }` (different servers, timestamp order) |
 | hasChanges | boolean | `true` if any diff detected |
 | diff | object | Structured diff with sections: identity, capabilities, skills, interfaces, security, categories |
 
@@ -236,8 +236,9 @@ already globally unique and keep their numbers.
 
 ### CMP — Comparison
 
-`CMP-*` codes are emitted by `.compare()` and are migrated to the structured finding shape in a
-later phase; they are documented here for completeness.
+`CMP-*` codes are emitted by `.compare()` as structured finding objects
+`{ code, severity, location: 'compare', message }` on its `findings` array — uniform with `start()`.
+The `diff` and `hasChanges` are keyed structurally, never on the codes.
 
 | Code | Severity | Description |
 |------|----------|-------------|
